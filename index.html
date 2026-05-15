@@ -1336,8 +1336,15 @@ input, select { font-family: var(--sans); }
   border-radius: var(--r-sm);
   background: var(--paper2);
   color: var(--ink);
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  box-sizing: border-box;
 }
+.addr-field { margin-bottom: 16px; }
+.addr-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--ink3); display: block; margin-bottom: 6px;
+}
+.addr-field-hint { font-size: 11px; color: var(--ink3); margin-top: 4px; min-height: 15px; }
 .addr-modal-input:focus { outline: none; border-color: var(--ink2); }
 .addr-type-grid {
   display: grid;
@@ -2328,28 +2335,38 @@ input, select { font-family: var(--sans); }
     <div class="addr-modal">
       <h3 id="addr-modal-title">Legg til adresse</h3>
 
-      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px;">Kallenavn</label>
-      <input class="addr-modal-input" id="addr-name-input" type="text" placeholder="F.eks. Hjemme, Hytta, Foreldrene" autocorrect="off" />
-
-      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin:10px 0 5px;">Gateadresse</label>
-      <input class="addr-modal-input" id="addr-street-input" type="text" placeholder="F.eks. Storgata 5" autocorrect="off" autocomplete="street-address" />
-
-      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin:10px 0 5px;">Postnummer</label>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input class="addr-modal-input" id="addr-postal-input" type="text" inputmode="numeric" maxlength="4" placeholder="F.eks. 0101" style="width:90px;flex-shrink:0;margin:0;" oninput="onPostalInput(this.value)" autocomplete="postal-code" />
-        <span id="addr-postal-place" style="font-size:13px;color:var(--ink2);font-weight:500;"></span>
+      <div class="addr-field">
+        <label class="addr-label" for="addr-name-input">Kallenavn</label>
+        <input class="addr-modal-input" id="addr-name-input" type="text" placeholder="F.eks. Hjemme, Hytta, Foreldrene" autocorrect="off" />
       </div>
-      <div id="addr-postal-status" style="font-size:11px;color:var(--ink3);margin:4px 0 0;min-height:14px;"></div>
 
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 6px;">Boligtype</div>
-      <div class="addr-type-grid" id="addr-type-grid"></div>
-
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 5px;">Plassering (for værvarsling)</div>
-      <div class="loc-row">
-        <input class="addr-modal-input" id="addr-city-input" type="text" placeholder="Fylles inn automatisk fra postnummer" style="margin:0;" autocorrect="off" />
-        <button class="btn-secondary" style="white-space:nowrap;font-size:12px;padding:8px 10px;" onclick="detectLocation()" title="Bruk GPS-posisjon"><i class="ti ti-current-location"></i></button>
+      <div class="addr-field">
+        <label class="addr-label" for="addr-street-input">Gateadresse</label>
+        <input class="addr-modal-input" id="addr-street-input" type="text" placeholder="F.eks. Storgata 5" autocorrect="off" autocomplete="street-address" />
       </div>
-      <div id="loc-status" style="font-size:11px;color:var(--ink3);margin:4px 0 10px;min-height:16px;"></div>
+
+      <div class="addr-field">
+        <label class="addr-label" for="addr-postal-input">Postnummer</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="addr-modal-input" id="addr-postal-input" type="text" inputmode="numeric" maxlength="4" placeholder="0000" style="width:90px;flex-shrink:0;" oninput="onPostalInput(this.value)" autocomplete="postal-code" />
+          <span id="addr-postal-place" style="font-size:14px;color:var(--ink2);font-weight:500;"></span>
+        </div>
+        <div id="addr-postal-status" class="addr-field-hint"></div>
+      </div>
+
+      <div class="addr-field">
+        <label class="addr-label">Boligtype</label>
+        <div class="addr-type-grid" id="addr-type-grid"></div>
+      </div>
+
+      <div class="addr-field">
+        <label class="addr-label" for="addr-city-input">Plassering (for værvarsling)</label>
+        <div class="loc-row">
+          <input class="addr-modal-input" id="addr-city-input" type="text" placeholder="Fylles inn automatisk fra postnummer" autocorrect="off" />
+          <button class="btn-secondary" style="white-space:nowrap;font-size:12px;padding:10px 11px;" onclick="detectLocation()" title="Bruk GPS-posisjon"><i class="ti ti-current-location"></i></button>
+        </div>
+        <div id="loc-status" class="addr-field-hint"></div>
+      </div>
 
       <div class="addr-modal-btns">
         <button class="btn-secondary" style="flex:1;" onclick="closeAddrModal()">Avbryt</button>
