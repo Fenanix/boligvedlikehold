@@ -6581,12 +6581,14 @@ function buildReportPrompt(text) {
     .slice(0, 45000);
   return 'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
     'Finn alle bygningsdeler med tilstandsgrad TG 2 eller TG 3 (ignorer TG 0, TG 1 og IU/TGI). ' +
+    'For hvert funn: ta med prisanslag hvis det er oppgitt i rapporten (f.eks. "kr 50 000–80 000" eller "ca. 120 000 kr"). ' +
     'Svar UTELUKKENDE med en JSON-array – ingen markdown, ingen annen tekst:\n' +
     '[\n  {\n' +
     '    "tittel": "Bygningsdel – kort problembeskrivelse (maks 55 tegn)",\n' +
     '    "tg": 2,\n' +
     '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
-    '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)"\n' +
+    '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)",\n' +
+    '    "pris": "Prisanslag fra rapporten, eller null hvis ikke oppgitt"\n' +
     '  }\n]\n\nRAPPORT:\n' + clean;
 }
 
@@ -6825,6 +6827,7 @@ function renderScanModal() {
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:13.5px;font-weight:500;color:var(--ink);line-height:1.35;">' + (f.tittel || '') + '</div>' +
           '<div style="font-size:11.5px;color:var(--ink3);margin-top:2px;">' + (f.beskrivelse || '') + '</div>' +
+          (f.pris && f.pris !== 'null' ? '<div style="font-size:11.5px;color:var(--orange);font-weight:600;margin-top:3px;"><i class="ti ti-currency-krone" style="font-size:11px;"></i> ' + f.pris + '</div>' : '') +
         '</div>' +
       '</label>';
     }).join('');
@@ -6915,7 +6918,8 @@ function importScanFindings() {
       status:     TG_STATUS[f.tg] || 'planned',
       color:      TG_COLOR[f.tg]  || PROJ_COLORS[0],
       desc:       'TG ' + f.tg + ' – ' + (f.beskrivelse || ''),
-      budget:'', contractor:'', deadline:'',
+      budget:     (f.pris && f.pris !== 'null') ? f.pris : '',
+      contractor:'', deadline:'',
     });
     count++;
   });
