@@ -3882,7 +3882,7 @@ const STRINGS = {
     scanErrPdf:'Kunne ikke lese PDF-filen. Prøv en annen fil.',
     scanErrNoKey:'Mangler Claude API-nøkkel. Gå til Innstillinger.',
     scanErrApi:'API-feil. Sjekk at nøkkelen er gyldig.',
-    scanErrParse:'Kunne ikke tolke svaret fra Claude AI.',
+    scanErrParse:'Kunne ikke tolke svaret fra AI.',
     claudeApiKeyLabel:'Claude API-nøkkel', claudeApiKeyDesc:'Brukes til å analysere tilstandsrapporter med AI',
     geminiApiKeyLabel:'Google Gemini API-nøkkel', geminiApiKeyDesc:'Gratis alternativ – hent nøkkel på aistudio.google.com',
     aiProviderLabel:'Aktiv AI', aiProviderAuto:'Automatisk', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
@@ -3979,7 +3979,7 @@ const STRINGS = {
     scanErrPdf:'Kunde inte läsa PDF-filen. Prova en annan fil.',
     scanErrNoKey:'Saknar Claude API-nyckel. Gå till Inställningar.',
     scanErrApi:'API-fel. Kontrollera att nyckeln är giltig.',
-    scanErrParse:'Kunde inte tolka svaret från Claude AI.',
+    scanErrParse:'Kunde inte tolka svaret från AI.',
     claudeApiKeyLabel:'Claude API-nyckel', claudeApiKeyDesc:'Används för att analysera besiktningsrapporter med AI',
     geminiApiKeyLabel:'Google Gemini API-nyckel', geminiApiKeyDesc:'Gratis alternativ – hämta nyckel på aistudio.google.com',
     aiProviderLabel:'Aktiv AI', aiProviderAuto:'Automatisk', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
@@ -4075,7 +4075,7 @@ const STRINGS = {
     scanErrPdf:'Kunne ikke læse PDF-filen. Prøv en anden fil.',
     scanErrNoKey:'Mangler Claude API-nøgle. Gå til Indstillinger.',
     scanErrApi:'API-fejl. Kontroller at nøglen er gyldig.',
-    scanErrParse:'Kunne ikke tolke svaret fra Claude AI.',
+    scanErrParse:'Kunne ikke tolke svaret fra AI.',
     claudeApiKeyLabel:'Claude API-nøgle', claudeApiKeyDesc:'Bruges til at analysere tilstandsrapporter med AI',
     geminiApiKeyLabel:'Google Gemini API-nøgle', geminiApiKeyDesc:'Gratis alternativ – hent nøgle på aistudio.google.com',
     aiProviderLabel:'Aktiv AI', aiProviderAuto:'Automatisk', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
@@ -4171,7 +4171,7 @@ const STRINGS = {
     scanErrPdf:'Could not read the PDF file. Try another file.',
     scanErrNoKey:'Missing Claude API key. Go to Settings.',
     scanErrApi:'API error. Check that the key is valid.',
-    scanErrParse:'Could not interpret the response from Claude AI.',
+    scanErrParse:'Could not interpret the response from AI.',
     claudeApiKeyLabel:'Claude API key', claudeApiKeyDesc:'Used to analyse condition reports with AI',
     geminiApiKeyLabel:'Google Gemini API key', geminiApiKeyDesc:'Free alternative – get a key at aistudio.google.com',
     aiProviderLabel:'Active AI', aiProviderAuto:'Automatic', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
@@ -4267,7 +4267,7 @@ const STRINGS = {
     scanErrPdf:'PDF-Datei konnte nicht gelesen werden. Versuchen Sie eine andere Datei.',
     scanErrNoKey:'Fehlender Claude API-Schlüssel. Gehen Sie zu Einstellungen.',
     scanErrApi:'API-Fehler. Überprüfen Sie ob der Schlüssel gültig ist.',
-    scanErrParse:'Antwort von Claude AI konnte nicht interpretiert werden.',
+    scanErrParse:'Antwort von AI konnte nicht interpretiert werden.',
     claudeApiKeyLabel:'Claude API-Schlüssel', claudeApiKeyDesc:'Wird zur Analyse von Zustandsberichten mit AI verwendet',
     geminiApiKeyLabel:'Google Gemini API-Schlüssel', geminiApiKeyDesc:'Kostenlose Alternative – Schlüssel unter aistudio.google.com',
     aiProviderLabel:'Aktive AI', aiProviderAuto:'Automatisch', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
@@ -4363,7 +4363,7 @@ const STRINGS = {
     scanErrPdf:'Kon PDF-bestand niet lezen. Probeer een ander bestand.',
     scanErrNoKey:'Ontbrekende Claude API-sleutel. Ga naar Instellingen.',
     scanErrApi:'API-fout. Controleer of de sleutel geldig is.',
-    scanErrParse:'Kon het antwoord van Claude AI niet interpreteren.',
+    scanErrParse:'Kon het antwoord van AI niet interpreteren.',
     claudeApiKeyLabel:'Claude API-sleutel', claudeApiKeyDesc:'Wordt gebruikt om bouwkundige rapporten met AI te analyseren',
     geminiApiKeyLabel:'Google Gemini API-sleutel', geminiApiKeyDesc:'Gratis alternatief – sleutel ophalen op aistudio.google.com',
     aiProviderLabel:'Actieve AI', aiProviderAuto:'Automatisch', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
@@ -6591,9 +6591,21 @@ function buildReportPrompt(text) {
 }
 
 function parseJsonFromModel(raw) {
-  return JSON.parse(
-    raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
-  );
+  var cleaned = raw.trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
+
+  /* Try a straight parse first */
+  try { return JSON.parse(cleaned); } catch(e) {
+    /* If JSON is truncated (model hit token limit), salvage complete objects */
+    if (cleaned.startsWith('[')) {
+      var last = cleaned.lastIndexOf('}');
+      if (last !== -1) {
+        try { return JSON.parse(cleaned.slice(0, last + 1) + ']'); } catch(_) {}
+      }
+    }
+    throw e; /* re-throw original error if nothing worked */
+  }
 }
 
 /* ── Gemini: auto-detect best available model ── */
@@ -6650,7 +6662,7 @@ async function callGeminiForReport(text) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: buildReportPrompt(text) }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
+        generationConfig: { temperature: 0.1, maxOutputTokens: 8192 },
       }),
     }
   );
