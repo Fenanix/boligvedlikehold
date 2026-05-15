@@ -2327,15 +2327,30 @@ input, select { font-family: var(--sans); }
   <div class="addr-modal-overlay" onclick="if(event.target===this)closeAddrModal()">
     <div class="addr-modal">
       <h3 id="addr-modal-title">Legg til adresse</h3>
-      <input class="addr-modal-input" id="addr-name-input" type="text" placeholder="F.eks. Hjemme, Hytta, Foreldrene" />
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:8px;">Boligtype</div>
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px;">Kallenavn</label>
+      <input class="addr-modal-input" id="addr-name-input" type="text" placeholder="F.eks. Hjemme, Hytta, Foreldrene" autocorrect="off" />
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin:10px 0 5px;">Gateadresse</label>
+      <input class="addr-modal-input" id="addr-street-input" type="text" placeholder="F.eks. Storgata 5" autocorrect="off" autocomplete="street-address" />
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin:10px 0 5px;">Postnummer</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="addr-modal-input" id="addr-postal-input" type="text" inputmode="numeric" maxlength="4" placeholder="F.eks. 0101" style="width:90px;flex-shrink:0;margin:0;" oninput="onPostalInput(this.value)" autocomplete="postal-code" />
+        <span id="addr-postal-place" style="font-size:13px;color:var(--ink2);font-weight:500;"></span>
+      </div>
+      <div id="addr-postal-status" style="font-size:11px;color:var(--ink3);margin:4px 0 0;min-height:14px;"></div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 6px;">Boligtype</div>
       <div class="addr-type-grid" id="addr-type-grid"></div>
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 6px;">Plassering (for værvarsling)</div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 5px;">Plassering (for værvarsling)</div>
       <div class="loc-row">
-        <input class="addr-modal-input" id="addr-city-input" type="text" placeholder="By / stedsnavn  (f.eks. Oslo)" style="margin:0;" />
+        <input class="addr-modal-input" id="addr-city-input" type="text" placeholder="Fylles inn automatisk fra postnummer" style="margin:0;" autocorrect="off" />
         <button class="btn-secondary" style="white-space:nowrap;font-size:12px;padding:8px 10px;" onclick="detectLocation()" title="Bruk GPS-posisjon"><i class="ti ti-current-location"></i></button>
       </div>
       <div id="loc-status" style="font-size:11px;color:var(--ink3);margin:4px 0 10px;min-height:16px;"></div>
+
       <div class="addr-modal-btns">
         <button class="btn-secondary" style="flex:1;" onclick="closeAddrModal()">Avbryt</button>
         <button class="btn-primary" style="flex:2;" onclick="saveAddrModal()"><i class="ti ti-check"></i> Lagre</button>
@@ -3278,7 +3293,10 @@ function renderInnstillinger() {
               '<i class="ti ' + (typeIcons[a.boligtype]||'ti-home') + ' addr-item-icon"></i>' +
               '<div class="addr-item-text">' +
                 '<div class="addr-item-name">' + a.name + (a.id === APP.activeAddr ? ' <span style="font-size:10px;background:var(--ink);color:var(--warm-white);padding:1px 6px;border-radius:10px;font-weight:600;">Aktiv</span>' : '') + '</div>' +
-                '<div class="addr-item-type">' + (typeNames[a.boligtype]||'') + '</div>' +
+                '<div class="addr-item-type">' + (typeNames[a.boligtype]||'') +
+                  (a.street ? ' · ' + a.street : '') +
+                  (a.postalCode ? ', ' + a.postalCode + (a.postalPlace ? ' ' + a.postalPlace : '') : '') +
+                '</div>' +
               '</div>' +
               '<div class="addr-item-actions">' +
                 (a.id !== APP.activeAddr ? '<button class="btn-secondary" style="font-size:12px;padding:5px 10px;" onclick="switchAddress(\'' + a.id + '\');renderPage();">Bytt</button>' : '') +
@@ -5398,12 +5416,26 @@ function openAddrModal(editId) {
   var overlay = document.getElementById('addr-modal-overlay');
   var input   = document.getElementById('addr-name-input');
   var title   = document.getElementById('addr-modal-title');
+  var streetEl  = document.getElementById('addr-street-input');
+  var postalEl  = document.getElementById('addr-postal-input');
+  var placeEl   = document.getElementById('addr-postal-place');
+  var cityEl    = document.getElementById('addr-city-input');
+  var statusEl  = document.getElementById('addr-postal-status');
+  if (streetEl) streetEl.value = '';
+  if (postalEl) postalEl.value = '';
+  if (placeEl)  placeEl.textContent = '';
+  if (statusEl) statusEl.textContent = '';
+  if (cityEl)   { cityEl.value = ''; cityEl.dataset.manuallyEdited = ''; }
+
   if (editId) {
     var addr = APP.addresses.find(function(a) { return a.id === editId; });
     if (!addr) return;
     title.textContent = 'Rediger adresse';
     input.value = addr.name;
     _addrModalType = addr.boligtype;
+    if (streetEl && addr.street)      streetEl.value = addr.street;
+    if (postalEl && addr.postalCode)  { postalEl.value = addr.postalCode; onPostalInput(addr.postalCode); }
+    if (cityEl   && addr.cityName)    cityEl.value = addr.cityName;
   } else {
     title.textContent = 'Legg til adresse';
     input.value = '';
@@ -5432,15 +5464,24 @@ function confirmDeleteAddr(id, name) {
 }
 
 function saveAddrModal() {
-  var name = (document.getElementById('addr-name-input').value || '').trim();
+  var name       = (document.getElementById('addr-name-input').value    || '').trim();
+  var street     = (document.getElementById('addr-street-input') ? document.getElementById('addr-street-input').value || '' : '').trim();
+  var postalCode = (document.getElementById('addr-postal-input')  ? document.getElementById('addr-postal-input').value  || '' : '').trim();
+  var postalPlace= (document.getElementById('addr-postal-place')  ? document.getElementById('addr-postal-place').textContent || '' : '').trim();
+  var cityInput  = (document.getElementById('addr-city-input').value || '').trim();
+
+  /* Auto-derive name from street if label left blank */
+  if (!name && street) name = street;
   if (!name) { document.getElementById('addr-name-input').focus(); return; }
-  var cityInput = (document.getElementById('addr-city-input').value || '').trim();
 
   async function doSave(lat, lon, cityName) {
     if (_addrEditId) {
       var addr = APP.addresses.find(function(a) { return a.id === _addrEditId; });
       if (addr) {
         addr.name = name;
+        addr.street = street;
+        addr.postalCode = postalCode;
+        addr.postalPlace = postalPlace;
         addr.boligtype = _addrModalType;
         if (lat) { addr.lat = lat; addr.lon = lon; addr.cityName = cityName; }
         saveAddresses(APP.addresses);
@@ -5451,10 +5492,11 @@ function saveAddrModal() {
       }
     } else {
       var newAddr = addAddress(name, _addrModalType, null);
-      if (lat) {
-        newAddr.lat = lat; newAddr.lon = lon; newAddr.cityName = cityName;
-        saveAddresses(APP.addresses);
-      }
+      newAddr.street = street;
+      newAddr.postalCode = postalCode;
+      newAddr.postalPlace = postalPlace;
+      if (lat) { newAddr.lat = lat; newAddr.lon = lon; newAddr.cityName = cityName; }
+      saveAddresses(APP.addresses);
       switchAddress(newAddr.id);
     }
     closeAddrModal();
@@ -6159,6 +6201,42 @@ async function loadWeatherForCurrentAddr() {
 }
 
 // Geocode city name using Nominatim (free, no key needed)
+/* ── Norwegian postal code → poststed + kommune (Bring API) ── */
+async function lookupPostalCode(pnr) {
+  try {
+    var r = await fetch(
+      'https://api.bring.com/shippingguide/api/postalCode.json?clientUrl=boligvedlikehold&country=NO&pnr=' + encodeURIComponent(pnr)
+    );
+    if (!r.ok) return null;
+    var d = await r.json();
+    if (!d.valid) return null;
+    return { postalPlace: d.result }; // e.g. "OSLO"
+  } catch { return null; }
+}
+
+function onPostalInput(val) {
+  var statusEl = document.getElementById('addr-postal-status');
+  var placeEl  = document.getElementById('addr-postal-place');
+  var cityEl   = document.getElementById('addr-city-input');
+  if (!statusEl || !placeEl) return;
+
+  var country = (APP.locale && APP.locale.country) || 'NO';
+  if (country !== 'NO' || val.length !== 4 || !/^\d{4}$/.test(val)) {
+    placeEl.textContent = '';
+    statusEl.textContent = '';
+    return;
+  }
+  statusEl.textContent = 'Slår opp…';
+  placeEl.textContent = '';
+  lookupPostalCode(val).then(function(res) {
+    if (!res) { statusEl.textContent = 'Ukjent postnummer.'; return; }
+    var place = res.postalPlace.charAt(0) + res.postalPlace.slice(1).toLowerCase();
+    placeEl.textContent = place;
+    statusEl.textContent = '';
+    if (cityEl && !cityEl.dataset.manuallyEdited) cityEl.value = place;
+  });
+}
+
 async function geocodeCity(cityName) {
   try {
     var r = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' +
