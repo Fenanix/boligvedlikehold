@@ -6527,6 +6527,12 @@ async function callClaudeForReport(text) {
   var key = APP.claudeApiKey;
   if (!key) { var e = new Error('no_key'); e.code = 'no_key'; throw e; }
 
+  /* Strip PDF extraction artefacts that can corrupt the JSON payload */
+  var clean = text
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')  // control chars
+    .replace(/ {3,}/g, '  ')                               // collapse whitespace
+    .slice(0, 45000);                                       // stay well within limits
+
   var prompt =
     'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
     'Finn alle bygningsdeler med tilstandsgrad TG 2 eller TG 3 (ignorer TG 0, TG 1 og IU/TGI). ' +
@@ -6538,7 +6544,7 @@ async function callClaudeForReport(text) {
     '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
     '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)"\n' +
     '  }\n' +
-    ']\n\nRAPPORT:\n' + text.slice(0, 90000);
+    ']\n\nRAPPORT:\n' + clean;
 
   var res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -6549,16 +6555,17 @@ async function callClaudeForReport(text) {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }],
     }),
   });
 
   if (!res.ok) {
-    var body = await res.json().catch(function() { return {}; });
-    var e2 = new Error('api'); e2.code = 'api'; e2.status = res.status;
-    e2.detail = body.error && body.error.message; throw e2;
+    var errBody = await res.json().catch(function() { return {}; });
+    var detail  = (errBody.error && errBody.error.message) || JSON.stringify(errBody);
+    var e2 = new Error('api'); e2.code = 'api'; e2.status = res.status; e2.detail = detail;
+    throw e2;
   }
   var data = await res.json();
   var raw  = ((data.content[0] || {}).text || '').trim()
@@ -6696,9 +6703,15 @@ async function startReportScan(file) {
     _scanState = 'results'; _scanData = { findings: findings }; _scanSelected = null;
   } catch(err) {
     _scanState = 'error';
-    if (err.code === 'no_key') _scanData = { error: t('scanErrNoKey') };
-    else if (err.code === 'api') _scanData = { error: t('scanErrApi') + (err.status ? ' (HTTP ' + err.status + ')' : '') };
-    else _scanData = { error: t('scanErrParse') };
+    if (err.code === 'no_key') {
+      _scanData = { error: t('scanErrNoKey') };
+    } else if (err.code === 'api') {
+      var msg = 'HTTP ' + err.status;
+      if (err.detail) msg += ': ' + err.detail;
+      _scanData = { error: msg };
+    } else {
+      _scanData = { error: t('scanErrParse') + (err.message ? ': ' + err.message : '') };
+    }
   }
   renderScanModal();
 }
