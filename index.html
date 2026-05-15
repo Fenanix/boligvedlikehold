@@ -2264,7 +2264,7 @@ input, select { font-family: var(--sans); }
   <div class="proj-modal-overlay">
     <div class="proj-modal">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h3 style="margin:0;"><i class="ti ti-hammer" style="margin-right:8px;font-size:18px;vertical-align:-2px;"></i>Prosjekt</h3>
+        <h3 id="proj-modal-title" style="margin:0;"><i class="ti ti-hammer" style="margin-right:8px;font-size:18px;vertical-align:-2px;"></i>Prosjekt</h3>
         <button onclick="closeProjModal()" style="background:none;border:none;font-size:20px;color:var(--ink3);cursor:pointer;"><i class="ti ti-x"></i></button>
       </div>
       <div id="proj-modal-body"></div>
@@ -3642,6 +3642,26 @@ const STRINGS = {
     legalDisclaimer:'Denne oversikten er veiledende. Kommunale bestemmelser kan stille strengere krav. Snakk alltid med kommunen eller en godkjent fagperson ved tvil. Dette er ikke juridisk rådgivning.',
     canDoSelf:'Kan gjøres selv', forbidden:'Forbudt / fagfolk', conditions:'Betingelser',
     languageCountry:'Språk og land', language:'Språk', country:'Land', projects:'Prosjekter',
+    projNew:'Nytt', projActive:'Pågår', projPlanned:'Planlagt', projPaused:'Pauset',
+    projEmptyTitle:'Ingen prosjekter ennå', projEmptyTitleFilter:'Ingen i denne kategorien',
+    projEmptyDesc:'Legg til renoveringsprosjekter og oppussingsplaner. Hold orden på budsjett, oppgaver og fremdrift – separat fra det løpende vedlikeholdet.',
+    projEmptyFilterDesc:'Prøv et annet filter.', projEmptyBtn:'Legg til første prosjekt',
+    projOf:'av', projTasksWord:'oppgaver', projFinished:'ferdig',
+    projDeadline:'Frist', projBudget:'Budsjett', projSubtasks:'Deloppgaver',
+    projAddSubtask:'Legg til deloppgave…', projStatusLabel:'Status',
+    projEdit:'Rediger', projDelete:'Slett', projModalTitle:'Prosjekt',
+    projNameLabel:'Prosjektnavn', projNamePlaceholder:'F.eks. Renovere kjøkkenet',
+    projCategoryLabel:'Kategori', projColorLabel:'Farge',
+    projDescLabel:'Beskrivelse (valgfritt)', projDescPlaceholder:'Hva skal gjøres? Ønsker, inspirasjon...',
+    projBudgetLabel:'Budsjett (valgfritt)', projBudgetPlaceholder:'F.eks. 150 000 kr',
+    projContractorLabel:'Entreprenør / Fagperson (valgfritt)', projContractorPlaceholder:'Navn eller firma',
+    projDeadlineLabel:'Frist / ønsket ferdigdato (valgfritt)',
+    projCancel:'Avbryt', projSave:'Lagre endringer', projCreate:'Opprett prosjekt',
+    projDefaultName:'Nytt prosjekt', projUpdatedToast:'Prosjekt oppdatert.', projAddedToast:'lagt til!',
+    projDeleteConfirm:'Slette «{name}»? Dette kan ikke angres.',
+    catKjokken:'Kjøkken', catBad:'Bad', catStue:'Stue', catSoverom:'Soverom',
+    catEntre:'Entré/Gang', catUtvendig:'Utvendig', catHage:'Hage',
+    catLoft:'Loft/Kjeller', catAnnet:'Annet',
     // Toasts & messages
     taskDone:'✓ Utført! Neste gang:',
     taskUndone:'Angret – oppgaven er aktiv igjen.',
@@ -3700,7 +3720,27 @@ const STRINGS = {
     legalSubtitle:'Baserat på nationell lagstiftning',
     legalDisclaimer:'Denna översikt är vägledande. Kommunala bestämmelser kan ställa strängare krav. Tala alltid med kommunen eller en godkänd fackperson vid tveksamheter. Detta är inte juridisk rådgivning.',
     canDoSelf:'Får göras själv', forbidden:'Förbjudet / fackfolk', conditions:'Villkor',
-    languageCountry:'Språk och land', language:'Språk', country:'Land',
+    languageCountry:'Språk och land', language:'Språk', country:'Land', projects:'Projekt',
+    projNew:'Nytt', projActive:'Pågår', projPlanned:'Planerat', projPaused:'Pausat',
+    projEmptyTitle:'Inga projekt ännu', projEmptyTitleFilter:'Inga i denna kategori',
+    projEmptyDesc:'Lägg till renoveringsprojekt och upprustningsplaner. Håll koll på budget, uppgifter och framsteg – separat från det löpande underhållet.',
+    projEmptyFilterDesc:'Prova ett annat filter.', projEmptyBtn:'Lägg till första projekt',
+    projOf:'av', projTasksWord:'uppgifter', projFinished:'klart',
+    projDeadline:'Deadline', projBudget:'Budget', projSubtasks:'Deluppgifter',
+    projAddSubtask:'Lägg till deluppgift…', projStatusLabel:'Status',
+    projEdit:'Redigera', projDelete:'Ta bort', projModalTitle:'Projekt',
+    projNameLabel:'Projektnamn', projNamePlaceholder:'T.ex. Renovera köket',
+    projCategoryLabel:'Kategori', projColorLabel:'Färg',
+    projDescLabel:'Beskrivning (valfritt)', projDescPlaceholder:'Vad ska göras? Önskemål, inspiration...',
+    projBudgetLabel:'Budget (valfritt)', projBudgetPlaceholder:'T.ex. 150 000 kr',
+    projContractorLabel:'Entreprenör / Hantverkare (valfritt)', projContractorPlaceholder:'Namn eller företag',
+    projDeadlineLabel:'Deadline / önskat slutdatum (valfritt)',
+    projCancel:'Avbryt', projSave:'Spara ändringar', projCreate:'Skapa projekt',
+    projDefaultName:'Nytt projekt', projUpdatedToast:'Projekt uppdaterat.', projAddedToast:'tillagd!',
+    projDeleteConfirm:'Ta bort «{name}»? Detta kan inte ångras.',
+    catKjokken:'Kök', catBad:'Badrum', catStue:'Vardagsrum', catSoverom:'Sovrum',
+    catEntre:'Hall/Entré', catUtvendig:'Utvändig', catHage:'Trädgård',
+    catLoft:'Vind/Källare', catAnnet:'Övrigt',
     taskDone:'✓ Klart! Nästa gång:',
     taskUndone:'Ångrat – uppgiften är aktiv igen.',
     taskSnoozed:'Uppgift uppskjuten 1 vecka.',
@@ -3758,7 +3798,27 @@ const STRINGS = {
     legalSubtitle:'Baseret på national lovgivning',
     legalDisclaimer:'Denne oversigt er vejledende. Kommunale regler kan stille strengere krav. Tal altid med kommunen eller en godkendt fagperson ved tvivl. Dette er ikke juridisk rådgivning.',
     canDoSelf:'Må gøres selv', forbidden:'Forbudt / fagfolk', conditions:'Betingelser',
-    languageCountry:'Sprog og land', language:'Sprog', country:'Land',
+    languageCountry:'Sprog og land', language:'Sprog', country:'Land', projects:'Projekter',
+    projNew:'Nyt', projActive:'I gang', projPlanned:'Planlagt', projPaused:'På pause',
+    projEmptyTitle:'Ingen projekter endnu', projEmptyTitleFilter:'Ingen i denne kategori',
+    projEmptyDesc:'Tilføj renoveringsprojekter og istandsættelsesplaner. Hold styr på budget, opgaver og fremskridt – adskilt fra den løbende vedligeholdelse.',
+    projEmptyFilterDesc:'Prøv et andet filter.', projEmptyBtn:'Tilføj første projekt',
+    projOf:'af', projTasksWord:'opgaver', projFinished:'færdigt',
+    projDeadline:'Frist', projBudget:'Budget', projSubtasks:'Delopgaver',
+    projAddSubtask:'Tilføj delopgave…', projStatusLabel:'Status',
+    projEdit:'Rediger', projDelete:'Slet', projModalTitle:'Projekt',
+    projNameLabel:'Projektnavn', projNamePlaceholder:'F.eks. Renovere køkkenet',
+    projCategoryLabel:'Kategori', projColorLabel:'Farve',
+    projDescLabel:'Beskrivelse (valgfrit)', projDescPlaceholder:'Hvad skal gøres? Ønsker, inspiration...',
+    projBudgetLabel:'Budget (valgfrit)', projBudgetPlaceholder:'F.eks. 150.000 kr',
+    projContractorLabel:'Entreprenør / Fagperson (valgfrit)', projContractorPlaceholder:'Navn eller firma',
+    projDeadlineLabel:'Frist / ønsket slutdato (valgfrit)',
+    projCancel:'Annuller', projSave:'Gem ændringer', projCreate:'Opret projekt',
+    projDefaultName:'Nyt projekt', projUpdatedToast:'Projekt opdateret.', projAddedToast:'tilføjet!',
+    projDeleteConfirm:'Slette «{name}»? Dette kan ikke fortrydes.',
+    catKjokken:'Køkken', catBad:'Badeværelse', catStue:'Stue', catSoverom:'Soveværelse',
+    catEntre:'Entre/Gang', catUtvendig:'Udvendig', catHage:'Have',
+    catLoft:'Loft/Kælder', catAnnet:'Andet',
     taskDone:'✓ Udført! Næste gang:',
     haConnBtn:'Forbind',
     haReConnBtn:'Forbind igen',
@@ -3816,7 +3876,27 @@ const STRINGS = {
     legalSubtitle:'Based on national regulations',
     legalDisclaimer:'This overview is for guidance only. Local rules may apply. Always consult your local authority or a qualified professional when in doubt. This is not legal advice.',
     canDoSelf:'Can do yourself', forbidden:'Forbidden / tradesman', conditions:'Conditions apply',
-    languageCountry:'Language and country', language:'Language', country:'Country',
+    languageCountry:'Language and country', language:'Language', country:'Country', projects:'Projects',
+    projNew:'New', projActive:'Active', projPlanned:'Planned', projPaused:'Paused',
+    projEmptyTitle:'No projects yet', projEmptyTitleFilter:'None in this category',
+    projEmptyDesc:'Add renovation projects and improvement plans. Track budget, tasks and progress – separate from your routine maintenance.',
+    projEmptyFilterDesc:'Try another filter.', projEmptyBtn:'Add first project',
+    projOf:'of', projTasksWord:'tasks', projFinished:'done',
+    projDeadline:'Deadline', projBudget:'Budget', projSubtasks:'Sub-tasks',
+    projAddSubtask:'Add sub-task…', projStatusLabel:'Status',
+    projEdit:'Edit', projDelete:'Delete', projModalTitle:'Project',
+    projNameLabel:'Project name', projNamePlaceholder:'E.g. Kitchen renovation',
+    projCategoryLabel:'Category', projColorLabel:'Colour',
+    projDescLabel:'Description (optional)', projDescPlaceholder:'What needs doing? Wishes, inspiration...',
+    projBudgetLabel:'Budget (optional)', projBudgetPlaceholder:'E.g. £15,000',
+    projContractorLabel:'Contractor / Tradesman (optional)', projContractorPlaceholder:'Name or company',
+    projDeadlineLabel:'Deadline / target date (optional)',
+    projCancel:'Cancel', projSave:'Save changes', projCreate:'Create project',
+    projDefaultName:'New project', projUpdatedToast:'Project updated.', projAddedToast:'added!',
+    projDeleteConfirm:'Delete «{name}»? This cannot be undone.',
+    catKjokken:'Kitchen', catBad:'Bathroom', catStue:'Living room', catSoverom:'Bedroom',
+    catEntre:'Hallway', catUtvendig:'Exterior', catHage:'Garden',
+    catLoft:'Loft/Basement', catAnnet:'Other',
     taskDone:'✓ Done! Next time:',
     taskUndone:'Undone – task is active again.',
     taskSnoozed:'Task snoozed for 1 week.',
@@ -3874,7 +3954,27 @@ const STRINGS = {
     legalSubtitle:'Basierend auf nationalen Vorschriften',
     legalDisclaimer:'Diese Übersicht ist unverbindlich. Lokale Vorschriften können strenger sein. Im Zweifel immer die Gemeinde oder einen Fachmann konsultieren. Dies ist keine Rechtsberatung.',
     canDoSelf:'Selbst erlaubt', forbidden:'Verboten / Fachmann', conditions:'Bedingungen',
-    languageCountry:'Sprache und Land', language:'Sprache', country:'Land',
+    languageCountry:'Sprache und Land', language:'Sprache', country:'Land', projects:'Projekte',
+    projNew:'Neu', projActive:'Aktiv', projPlanned:'Geplant', projPaused:'Pausiert',
+    projEmptyTitle:'Noch keine Projekte', projEmptyTitleFilter:'Keine in dieser Kategorie',
+    projEmptyDesc:'Fügen Sie Renovierungsprojekte und Verbesserungspläne hinzu. Behalten Sie Budget, Aufgaben und Fortschritt im Blick – getrennt von der laufenden Wartung.',
+    projEmptyFilterDesc:'Anderen Filter versuchen.', projEmptyBtn:'Erstes Projekt hinzufügen',
+    projOf:'von', projTasksWord:'Aufgaben', projFinished:'fertig',
+    projDeadline:'Frist', projBudget:'Budget', projSubtasks:'Teilaufgaben',
+    projAddSubtask:'Teilaufgabe hinzufügen…', projStatusLabel:'Status',
+    projEdit:'Bearbeiten', projDelete:'Löschen', projModalTitle:'Projekt',
+    projNameLabel:'Projektname', projNamePlaceholder:'z.B. Küche renovieren',
+    projCategoryLabel:'Kategorie', projColorLabel:'Farbe',
+    projDescLabel:'Beschreibung (optional)', projDescPlaceholder:'Was ist zu tun? Wünsche, Inspiration...',
+    projBudgetLabel:'Budget (optional)', projBudgetPlaceholder:'z.B. 15.000 €',
+    projContractorLabel:'Auftragnehmer / Fachmann (optional)', projContractorPlaceholder:'Name oder Firma',
+    projDeadlineLabel:'Frist / Wunschtermin (optional)',
+    projCancel:'Abbrechen', projSave:'Änderungen speichern', projCreate:'Projekt erstellen',
+    projDefaultName:'Neues Projekt', projUpdatedToast:'Projekt aktualisiert.', projAddedToast:'hinzugefügt!',
+    projDeleteConfirm:'«{name}» löschen? Dies kann nicht rückgängig gemacht werden.',
+    catKjokken:'Küche', catBad:'Badezimmer', catStue:'Wohnzimmer', catSoverom:'Schlafzimmer',
+    catEntre:'Flur/Eingang', catUtvendig:'Außen', catHage:'Garten',
+    catLoft:'Dachboden/Keller', catAnnet:'Sonstiges',
     taskDone:'✓ Erledigt! Nächstes Mal:',
     taskUndone:'Rückgängig – Aufgabe ist wieder aktiv.',
     taskSnoozed:'Aufgabe um 1 Woche verschoben.',
@@ -3932,7 +4032,27 @@ const STRINGS = {
     legalSubtitle:'Gebaseerd op nationale regelgeving',
     legalDisclaimer:'Dit overzicht is indicatief. Lokale regelgeving kan strengere eisen stellen. Raadpleeg altijd een professional bij twijfel. Dit is geen juridisch advies.',
     canDoSelf:'Zelf toegestaan', forbidden:'Verboden / vakman', conditions:'Voorwaarden',
-    languageCountry:'Taal en land', language:'Taal', country:'Land',
+    languageCountry:'Taal en land', language:'Taal', country:'Land', projects:'Projecten',
+    projNew:'Nieuw', projActive:'Actief', projPlanned:'Gepland', projPaused:'Gepauzeerd',
+    projEmptyTitle:'Nog geen projecten', projEmptyTitleFilter:'Geen in deze categorie',
+    projEmptyDesc:'Voeg renovatieprojecten en verbeteringsplannen toe. Houd budget, taken en voortgang bij – los van het reguliere onderhoud.',
+    projEmptyFilterDesc:'Probeer een ander filter.', projEmptyBtn:'Eerste project toevoegen',
+    projOf:'van', projTasksWord:'taken', projFinished:'klaar',
+    projDeadline:'Deadline', projBudget:'Budget', projSubtasks:'Deeltaken',
+    projAddSubtask:'Deeltaak toevoegen…', projStatusLabel:'Status',
+    projEdit:'Bewerken', projDelete:'Verwijderen', projModalTitle:'Project',
+    projNameLabel:'Projectnaam', projNamePlaceholder:'Bijv. Keuken renoveren',
+    projCategoryLabel:'Categorie', projColorLabel:'Kleur',
+    projDescLabel:'Beschrijving (optioneel)', projDescPlaceholder:'Wat moet er gedaan worden? Wensen, inspiratie...',
+    projBudgetLabel:'Budget (optioneel)', projBudgetPlaceholder:'Bijv. € 15.000',
+    projContractorLabel:'Aannemer / Vakman (optioneel)', projContractorPlaceholder:'Naam of bedrijf',
+    projDeadlineLabel:'Deadline / gewenste datum (optioneel)',
+    projCancel:'Annuleren', projSave:'Wijzigingen opslaan', projCreate:'Project aanmaken',
+    projDefaultName:'Nieuw project', projUpdatedToast:'Project bijgewerkt.', projAddedToast:'toegevoegd!',
+    projDeleteConfirm:'«{name}» verwijderen? Dit kan niet ongedaan worden gemaakt.',
+    catKjokken:'Keuken', catBad:'Badkamer', catStue:'Woonkamer', catSoverom:'Slaapkamer',
+    catEntre:'Gang/Entree', catUtvendig:'Buiten', catHage:'Tuin',
+    catLoft:'Zolder/Kelder', catAnnet:'Overig',
     taskDone:'✓ Klaar! Volgende keer:',
     taskUndone:'Ongedaan – taak is weer actief.',
     taskSnoozed:'Taak 1 week uitgesteld.',
@@ -5656,23 +5776,27 @@ const PROJ_COLORS = [
   '#2A6E3F','#1A4F8A','#8A2A4A','#C96A00',
   '#5A3F9A','#1A7A7A','#8A1A1A','#3A5A9A',
 ];
-const PROJ_CATS = [
-  { key:'kjokken',  label:'Kjøkken',    icon:'ti-chef-hat' },
-  { key:'bad',      label:'Bad',         icon:'ti-droplet' },
-  { key:'stue',     label:'Stue',        icon:'ti-sofa' },
-  { key:'soverom',  label:'Soverom',     icon:'ti-bed' },
-  { key:'entré',    label:'Entré/Gang',  icon:'ti-door' },
-  { key:'utvendig', label:'Utvendig',    icon:'ti-building' },
-  { key:'hage',     label:'Hage',        icon:'ti-plant-2' },
-  { key:'loft',     label:'Loft/Kjeller',icon:'ti-stairs' },
-  { key:'annet',    label:'Annet',       icon:'ti-tool' },
-];
-const PROJ_STATUS = [
-  { key:'planned',  label:'Planlagt',   cls:'status-planned' },
-  { key:'active',   label:'Pågår',      cls:'status-active' },
-  { key:'paused',   label:'Pauset',     cls:'status-paused' },
-  { key:'done',     label:'Fullført',   cls:'status-done' },
-];
+function getProjCats() {
+  return [
+    { key:'kjokken',  label:t('catKjokken'), icon:'ti-chef-hat' },
+    { key:'bad',      label:t('catBad'),      icon:'ti-droplet' },
+    { key:'stue',     label:t('catStue'),     icon:'ti-sofa' },
+    { key:'soverom',  label:t('catSoverom'),  icon:'ti-bed' },
+    { key:'entré',    label:t('catEntre'),    icon:'ti-door' },
+    { key:'utvendig', label:t('catUtvendig'), icon:'ti-building' },
+    { key:'hage',     label:t('catHage'),     icon:'ti-plant-2' },
+    { key:'loft',     label:t('catLoft'),     icon:'ti-stairs' },
+    { key:'annet',    label:t('catAnnet'),    icon:'ti-tool' },
+  ];
+}
+function getProjStatus() {
+  return [
+    { key:'planned', label:t('projPlanned'), cls:'status-planned' },
+    { key:'active',  label:t('projActive'),  cls:'status-active' },
+    { key:'paused',  label:t('projPaused'),  cls:'status-paused' },
+    { key:'done',    label:t('done'),         cls:'status-done' },
+  ];
+}
 
 var _projEditId    = null;
 var _projFilter    = 'all';
@@ -5697,7 +5821,7 @@ function createProject(fields) {
   var list = loadProjects();
   var proj = {
     id:          genId(),
-    name:        fields.name        || 'Nytt prosjekt',
+    name:        fields.name        || t('projDefaultName'),
     category:    fields.category    || 'annet',
     status:      fields.status      || 'planned',
     color:       fields.color       || PROJ_COLORS[list.length % PROJ_COLORS.length],
@@ -5724,7 +5848,7 @@ function updateProject(id, fields) {
 function confirmDeleteProject(id) {
   var proj = loadProjects().find(function(p) { return p.id === id; });
   var name = proj ? proj.name : 'prosjektet';
-  if (confirm('Slette «' + name + '»? Dette kan ikke angres.')) {
+  if (confirm(t('projDeleteConfirm').replace('{name}', name))) {
     deleteProject(id);
     renderRenovering();
     updateRenoveringDot();
@@ -5786,6 +5910,8 @@ function openProjModal(editId) {
   _projEditId = editId || null;
   var overlay = document.getElementById('proj-modal-overlay');
   if (!overlay) return;
+  var titleEl = document.getElementById('proj-modal-title');
+  if (titleEl) titleEl.childNodes[titleEl.childNodes.length - 1].textContent = t('projModalTitle');
   renderProjModal();
   overlay.style.display = 'block';
 }
@@ -5809,38 +5935,38 @@ function renderProjModal() {
     return '<div class="color-swatch' + (c===_pmFields.color?' sel':'') + '" style="background:' + c + '" onclick="pmSetColor(' + idx + ')"></div>';
   }).join('');
 
-  var catBtns = PROJ_CATS.map(function(c, idx) {
+  var catBtns = getProjCats().map(function(c, idx) {
     return '<button class="cat-pick-btn' + (c.key===_pmFields.category?' sel':'') + '" onclick="pmSetCat(' + idx + ')">' +
       '<i class="ti ' + c.icon + '"></i> ' + c.label + '</button>';
   }).join('');
 
-  var statusBtns = PROJ_STATUS.map(function(s, idx) {
+  var statusBtns = getProjStatus().map(function(s, idx) {
     return '<button class="cat-pick-btn' + (s.key===_pmFields.status?' sel':'') + '" onclick="pmSetStatus(' + idx + ')">' + s.label + '</button>';
   }).join('');
 
   var body = document.getElementById('proj-modal-body');
   if (!body) return;
   body.innerHTML =
-    '<label>Prosjektnavn</label>' +
-    '<input class="proj-modal-input" id="pm-name" type="text" placeholder="F.eks. Renovere kjøkkenet" value="' + _pmFields.name.replace(/"/g,'&quot;') + '" oninput="_pmFields.name=this.value" />' +
-    '<label>Kategori</label>' +
+    '<label>' + t('projNameLabel') + '</label>' +
+    '<input class="proj-modal-input" id="pm-name" type="text" placeholder="' + t('projNamePlaceholder') + '" value="' + _pmFields.name.replace(/"/g,'&quot;') + '" oninput="_pmFields.name=this.value" />' +
+    '<label>' + t('projCategoryLabel') + '</label>' +
     '<div class="cat-picker-row" id="pm-cats">' + catBtns + '</div>' +
-    '<label>Status</label>' +
+    '<label>' + t('projStatusLabel') + '</label>' +
     '<div class="cat-picker-row" id="pm-statuses">' + statusBtns + '</div>' +
-    '<label>Farge</label>' +
+    '<label>' + t('projColorLabel') + '</label>' +
     '<div class="color-picker-row">' + colorSwatches + '</div>' +
-    '<label>Beskrivelse (valgfritt)</label>' +
-    '<textarea class="proj-modal-input" placeholder="Hva skal gjøres? Ønsker, inspirasjon..." oninput="_pmFields.desc=this.value">' + _pmFields.desc + '</textarea>' +
-    '<label>Budsjett (valgfritt)</label>' +
-    '<input class="proj-modal-input" type="text" placeholder="F.eks. 150 000 kr" value="' + _pmFields.budget + '" oninput="_pmFields.budget=this.value" />' +
-    '<label>Entreprenør / Fagperson (valgfritt)</label>' +
-    '<input class="proj-modal-input" type="text" placeholder="Navn eller firma" value="' + _pmFields.contractor + '" oninput="_pmFields.contractor=this.value" />' +
-    '<label>Frist / ønsket ferdigdato (valgfritt)</label>' +
+    '<label>' + t('projDescLabel') + '</label>' +
+    '<textarea class="proj-modal-input" placeholder="' + t('projDescPlaceholder') + '" oninput="_pmFields.desc=this.value">' + _pmFields.desc + '</textarea>' +
+    '<label>' + t('projBudgetLabel') + '</label>' +
+    '<input class="proj-modal-input" type="text" placeholder="' + t('projBudgetPlaceholder') + '" value="' + _pmFields.budget + '" oninput="_pmFields.budget=this.value" />' +
+    '<label>' + t('projContractorLabel') + '</label>' +
+    '<input class="proj-modal-input" type="text" placeholder="' + t('projContractorPlaceholder') + '" value="' + _pmFields.contractor + '" oninput="_pmFields.contractor=this.value" />' +
+    '<label>' + t('projDeadlineLabel') + '</label>' +
     '<input class="proj-modal-input" type="date" value="' + _pmFields.deadline + '" oninput="_pmFields.deadline=this.value" />' +
     '<div class="addr-modal-btns">' +
-      '<button class="btn-secondary" style="flex:1;" onclick="closeProjModal()">Avbryt</button>' +
+      '<button class="btn-secondary" style="flex:1;" onclick="closeProjModal()">' + t('projCancel') + '</button>' +
       '<button class="btn-primary" style="flex:2;" onclick="saveProjModal()">' +
-        '<i class="ti ti-check"></i> ' + (isEdit ? 'Lagre endringer' : 'Opprett prosjekt') +
+        '<i class="ti ti-check"></i> ' + (isEdit ? t('projSave') : t('projCreate')) +
       '</button>' +
     '</div>';
 
@@ -5858,13 +5984,13 @@ function pmSetColor(idx) {
   });
 }
 function pmSetCat(idx) {
-  _pmFields.category = PROJ_CATS[idx].key;
+  _pmFields.category = getProjCats()[idx].key;
   document.querySelectorAll('#pm-cats .cat-pick-btn').forEach(function(el, i) {
     el.classList.toggle('sel', i === idx);
   });
 }
 function pmSetStatus(idx) {
-  _pmFields.status = PROJ_STATUS[idx].key;
+  _pmFields.status = getProjStatus()[idx].key;
   document.querySelectorAll('#pm-statuses .cat-pick-btn').forEach(function(el, i) {
     el.classList.toggle('sel', i === idx);
   });
@@ -5878,10 +6004,10 @@ function saveProjModal() {
   }
   if (_projEditId) {
     updateProject(_projEditId, _pmFields);
-    showToast('Prosjekt oppdatert.');
+    showToast(t('projUpdatedToast'));
   } else {
     createProject(_pmFields);
-    showToast('"' + _pmFields.name + '" lagt til!');
+    showToast('"' + _pmFields.name + '" ' + t('projAddedToast'));
   }
   closeProjModal();
   renderRenovering();
@@ -5919,10 +6045,10 @@ function renderRenovering() {
   var done    = projects.filter(function(p) { return p.status === 'done'; }).length;
 
   var filterPills = [
-    { key:'all',     label:'Alle (' + projects.length + ')' },
-    { key:'active',  label:'Pågår' },
-    { key:'planned', label:'Planlagt' },
-    { key:'done',    label:'Fullført' },
+    { key:'all',     label:t('allTasks') + ' (' + projects.length + ')' },
+    { key:'active',  label:t('projActive') },
+    { key:'planned', label:t('projPlanned') },
+    { key:'done',    label:t('done') },
   ].map(function(f) {
     return '<button class="pill' + (_projFilter===f.key?' active':'') + '" onclick="_projFilter=this.dataset.f;renderRenovering()" data-f="' + f.key + '">' + f.label + '</button>';
   }).join('');
@@ -5930,9 +6056,9 @@ function renderRenovering() {
   var projectCards = filtered.length === 0
     ? '<div class="ren-empty">' +
         '<div class="ren-empty-icon"><i class="ti ti-hammer"></i></div>' +
-        '<h3>' + (projects.length === 0 ? 'Ingen prosjekter ennå' : 'Ingen i denne kategorien') + '</h3>' +
-        '<p>' + (projects.length === 0 ? 'Legg til renoveringsprosjekter og oppussingsplaner. Hold orden på budsjett, oppgaver og fremdrift – separat fra det løpende vedlikeholdet.' : 'Prøv et annet filter.') + '</p>' +
-        (projects.length === 0 ? '<button class="btn-primary" style="margin:0 auto;display:flex;" onclick="openProjModal()"><i class="ti ti-plus"></i> Legg til første prosjekt</button>' : '') +
+        '<h3>' + (projects.length === 0 ? t('projEmptyTitle') : t('projEmptyTitleFilter')) + '</h3>' +
+        '<p>' + (projects.length === 0 ? t('projEmptyDesc') : t('projEmptyFilterDesc')) + '</p>' +
+        (projects.length === 0 ? '<button class="btn-primary" style="margin:0 auto;display:flex;" onclick="openProjModal()"><i class="ti ti-plus"></i> ' + t('projEmptyBtn') + '</button>' : '') +
       '</div>'
     : filtered.map(function(proj) {
         return renderProjectCard(proj);
@@ -5940,13 +6066,13 @@ function renderRenovering() {
 
   document.getElementById('page-renovering').innerHTML =
     '<div class="ren-header">' +
-      '<h2>Prosjekter</h2>' +
-      '<button class="btn-primary" style="font-size:13px;padding:8px 14px;" onclick="openProjModal()"><i class="ti ti-plus"></i> Nytt</button>' +
+      '<h2>' + t('projects') + '</h2>' +
+      '<button class="btn-primary" style="font-size:13px;padding:8px 14px;" onclick="openProjModal()"><i class="ti ti-plus"></i> ' + t('projNew') + '</button>' +
     '</div>' +
     '<div class="ren-stat-strip">' +
-      '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--blue)">' + active + '</div><div class="ren-stat-lbl">Pågår</div></div>' +
-      '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--purple)">' + planned + '</div><div class="ren-stat-lbl">Planlagt</div></div>' +
-      '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--green)">' + done + '</div><div class="ren-stat-lbl">Fullført</div></div>' +
+      '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--blue)">' + active + '</div><div class="ren-stat-lbl">' + t('projActive') + '</div></div>' +
+      '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--purple)">' + planned + '</div><div class="ren-stat-lbl">' + t('projPlanned') + '</div></div>' +
+      '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--green)">' + done + '</div><div class="ren-stat-lbl">' + t('done') + '</div></div>' +
     '</div>' +
     '<div class="ren-filter-row filter-bar" style="padding:6px 16px 8px;">' + filterPills + '</div>' +
     '<div class="project-list">' + projectCards + '</div>';
@@ -5954,8 +6080,10 @@ function renderRenovering() {
 
 function renderProjectCard(proj) {
   var isOpen = _projExpandId === proj.id;
-  var cat = PROJ_CATS.find(function(c) { return c.key === proj.category; }) || PROJ_CATS[PROJ_CATS.length-1];
-  var statusInfo = PROJ_STATUS.find(function(s) { return s.key === proj.status; }) || PROJ_STATUS[0];
+  var cats = getProjCats();
+  var cat = cats.find(function(c) { return c.key === proj.category; }) || cats[cats.length-1];
+  var statuses = getProjStatus();
+  var statusInfo = statuses.find(function(s) { return s.key === proj.status; }) || statuses[0];
   var totalTasks = proj.tasks.length;
   var doneTasks  = proj.tasks.filter(function(t) { return t.done; }).length;
   var pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
@@ -5970,17 +6098,17 @@ function renderProjectCard(proj) {
 
   var progressHtml = totalTasks > 0
     ? '<div class="project-progress-wrap">' +
-        '<div class="project-progress-label"><span>' + doneTasks + ' av ' + totalTasks + ' oppgaver</span><span>' + pct + '%</span></div>' +
+        '<div class="project-progress-label"><span>' + doneTasks + ' ' + t('projOf') + ' ' + totalTasks + ' ' + t('projTasksWord') + '</span><span>' + pct + '%</span></div>' +
         '<div class="project-progress-bar"><div class="project-progress-fill" style="width:' + pct + '%;background:' + proj.color + '"></div></div>' +
       '</div>'
     : '';
 
   var metaRows = '';
-  if (proj.deadline) metaRows += '<div class="project-detail-row"><i class="ti ti-calendar"></i> Frist: ' + new Date(proj.deadline).toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric'}) + '</div>';
-  if (proj.budget)      metaRows += '<div class="project-detail-row"><i class="ti ti-currency-krone"></i> Budsjett: ' + proj.budget + '</div>';
+  if (proj.deadline) metaRows += '<div class="project-detail-row"><i class="ti ti-calendar"></i> ' + t('projDeadline') + ': ' + fmtDate(new Date(proj.deadline)) + '</div>';
+  if (proj.budget)      metaRows += '<div class="project-detail-row"><i class="ti ti-currency-krone"></i> ' + t('projBudget') + ': ' + proj.budget + '</div>';
   if (proj.contractor)  metaRows += '<div class="project-detail-row"><i class="ti ti-user-check"></i> ' + proj.contractor + '</div>';
 
-  var statusBtns = PROJ_STATUS.map(function(s, sidx) {
+  var statusBtns = getProjStatus().map(function(s, sidx) {
     return '<button class="cat-pick-btn' + (s.key===proj.status?' sel':'') + '" style="font-size:11px;padding:4px 9px;" onclick="setProjectStatus(this.dataset.proj,this.dataset.status)" data-proj="' + proj.id + '" data-status="' + s.key + '">' + s.label + '</button>';
   }).join('');
 
@@ -5995,7 +6123,7 @@ function renderProjectCard(proj) {
         '<div class="project-chips">' +
           '<span class="project-chip ' + statusInfo.cls + '">' + statusInfo.label + '</span>' +
           '<span class="project-chip">' + cat.label + '</span>' +
-          (totalTasks > 0 ? '<span class="project-chip">' + pct + '% ferdig</span>' : '') +
+          (totalTasks > 0 ? '<span class="project-chip">' + pct + '% ' + t('projFinished') + '</span>' : '') +
         '</div>' +
       '</div>' +
       '<i class="ti ti-chevron-down project-chevron' + (isOpen?' open':'') + '"></i>' +
@@ -6006,18 +6134,18 @@ function renderProjectCard(proj) {
           metaRows +
           progressHtml +
           (totalTasks > 0 || isOpen
-            ? '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px;">Deloppgaver</div>' +
+            ? '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px;">' + t('projSubtasks') + '</div>' +
               '<div class="task-checklist">' + taskItems + '</div>' +
               '<div style="display:flex;gap:6px;margin-bottom:12px;">' +
-                '<input class="proj-modal-input" id="new-task-' + proj.id + '" type="text" placeholder="Legg til deloppgave…" style="flex:1;margin:0;font-size:13px;padding:8px 10px;" onkeydown="if(event.key===\'Enter\')submitProjectTask(\'' + proj.id + '\')" />' +
+                '<input class="proj-modal-input" id="new-task-' + proj.id + '" type="text" placeholder="' + t('projAddSubtask') + '" style="flex:1;margin:0;font-size:13px;padding:8px 10px;" onkeydown="if(event.key===\'Enter\')submitProjectTask(\'' + proj.id + '\')" />' +
                 '<button class="btn-secondary" style="padding:8px 12px;" onclick="submitProjectTask(\'' + proj.id + '\')"><i class="ti ti-plus"></i></button>' +
               '</div>'
             : '') +
-          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px;">Status</div>' +
+          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px;">' + t('projStatusLabel') + '</div>' +
           '<div class="cat-picker-row" style="margin-bottom:12px;">' + statusBtns + '</div>' +
           '<div class="project-actions">' +
-            '<button class="btn-secondary" style="font-size:12px;" onclick="openProjModal(this.dataset.id)" data-id="' + proj.id + '"><i class="ti ti-pencil"></i> Rediger</button>' +
-            '<button class="btn-secondary" style="font-size:12px;color:var(--red);" onclick="confirmDeleteProject(this.dataset.id)" data-id="' + proj.id + '"><i class="ti ti-trash"></i> Slett</button>' +
+            '<button class="btn-secondary" style="font-size:12px;" onclick="openProjModal(this.dataset.id)" data-id="' + proj.id + '"><i class="ti ti-pencil"></i> ' + t('projEdit') + '</button>' +
+            '<button class="btn-secondary" style="font-size:12px;color:var(--red);" onclick="confirmDeleteProject(this.dataset.id)" data-id="' + proj.id + '"><i class="ti ti-trash"></i> ' + t('projDelete') + '</button>' +
           '</div>' +
         '</div>'
       : '') +
