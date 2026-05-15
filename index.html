@@ -6596,13 +6596,55 @@ function parseJsonFromModel(raw) {
   );
 }
 
-/* ── Gemini ── */
+/* ── Gemini: auto-detect best available model ── */
+var _geminiModel = null;
+
+async function resolveGeminiModel(key) {
+  if (_geminiModel) return _geminiModel;
+
+  var res = await fetch('https://generativelanguage.googleapis.com/v1/models?key=' + key);
+  if (!res.ok) {
+    var eb = await res.json().catch(function() { return {}; });
+    var e3 = new Error('api'); e3.code = 'api'; e3.status = res.status;
+    e3.detail = (eb.error && eb.error.message) || 'Could not list Gemini models'; throw e3;
+  }
+  var data = await res.json();
+
+  /* Keep only models that support generateContent */
+  var available = (data.models || [])
+    .filter(function(m) { return (m.supportedGenerationMethods || []).indexOf('generateContent') !== -1; })
+    .map(function(m) { return m.name.replace('models/', ''); });
+
+  /* Prefer free flash models, then pro as fallback */
+  var preferred = [
+    'gemini-1.5-flash', 'gemini-1.5-flash-latest',
+    'gemini-1.5-flash-001', 'gemini-1.5-flash-002',
+    'gemini-1.5-flash-8b', 'gemini-1.5-flash-8b-latest',
+    'gemini-1.5-pro', 'gemini-1.5-pro-latest',
+    'gemini-1.0-pro', 'gemini-pro',
+  ];
+  for (var i = 0; i < preferred.length; i++) {
+    var p = preferred[i];
+    var hit = available.find(function(m) { return m === p || m.startsWith(p + '-'); });
+    if (hit) { _geminiModel = hit; return _geminiModel; }
+  }
+
+  /* Last resort: first model in the list */
+  if (available.length) { _geminiModel = available[0]; return _geminiModel; }
+
+  var e4 = new Error('api'); e4.code = 'api'; e4.status = 404;
+  e4.detail = 'No compatible Gemini models found for this API key. Available: ' + JSON.stringify(data.models && data.models.map(function(m){return m.name;}));
+  throw e4;
+}
+
 async function callGeminiForReport(text) {
   var key = APP.geminiApiKey;
   if (!key) { var e = new Error('no_key'); e.code = 'no_key'; throw e; }
 
+  var model = await resolveGeminiModel(key);
+
   var res = await fetch(
-    'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' + key,
+    'https://generativelanguage.googleapis.com/v1/models/' + model + ':generateContent?key=' + key,
     {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -6613,6 +6655,7 @@ async function callGeminiForReport(text) {
     }
   );
   if (!res.ok) {
+    _geminiModel = null; // reset so next attempt re-detects
     var errBody = await res.json().catch(function() { return {}; });
     var detail  = (errBody.error && errBody.error.message) || JSON.stringify(errBody);
     var e2 = new Error('api'); e2.code = 'api'; e2.status = res.status; e2.detail = detail;
