@@ -2159,7 +2159,8 @@ input, select { font-family: var(--sans); }
 .law-cat-icon.bygg { background: var(--green-soft);  color: var(--green); }
 .law-cat-icon.peis { background: var(--red-soft);    color: var(--red); }
 .law-cat-icon.bad  { background: var(--purple-soft); color: var(--purple); }
-.law-cat-icon.gen  { background: var(--paper3);      color: var(--ink2); }
+.law-cat-icon.gen        { background: var(--paper3);      color: var(--ink2); }
+.law-cat-icon.nabovarsel { background: var(--rose-soft);   color: var(--rose); }
 .law-cat-title {
   font-family: var(--serif);
   font-size: 16px;
@@ -3806,6 +3807,118 @@ function renderJuridisk() {
     '</div>';
   }).join('');
 
+  /* ── Norwegian-only: kommunale regler ── */
+  var kommunalHtml = '';
+  if (country === 'NO') {
+    var ld2 = 'https://lovdata.no';
+    var rows1 = [
+      { task:'Male/kle fasade i ny farge eller nytt materiale',
+        note:'Fasadeendring – søknadspliktig etter PBL § 20-2. Fargen kan også være regulert i kommuneplanen.',
+        status:'cond', label:'Søk kommunen' },
+      { task:'Bytte vinduer til annen størrelse eller fasong',
+        note:'Fasadeendring – søknadspliktig. Bytte til lik størrelse og utseende regnes som vedlikehold og er unntatt.',
+        status:'cond', label:'Avhenger av endring' },
+      { task:'Sette opp terrasse inntil 50 m² under 1 m høy',
+        note:'Normalt unntatt søknadsplikt etter SAK10 § 4-1 a, men avstand til nabogrense og reguleringsplan kan kreve søknad.',
+        status:'ok', label:'Normalt unntatt' },
+      { task:'Garasje eller uthus under 50 m²',
+        note:'Kan være unntatt søknadsplikt etter SAK10 § 4-1 b hvis rett avstand til nabogrense og ikke i strid med plan.',
+        status:'ok', label:'Kan være unntatt' },
+      { task:'Tilbygg under 15 m²',
+        note:'Kan være unntatt etter SAK10 § 4-1 a, men sjekk alltid reguleringsplan – noen kommuner har strengere krav.',
+        status:'ok', label:'Kan være unntatt' },
+      { task:'Tilbygg over 15 m²',
+        note:'Alltid søknadspliktig etter PBL § 20-2. Krever ansvarlig søker (tiltaksklasse 1).',
+        status:'no', label:'Søknadspliktig' },
+      { task:'Påbygg (ekstra etasje)',
+        note:'Alltid søknadspliktig. Krever godkjent foretak og samsvar med reguleringsplan og kommuneplanens arealdel.',
+        status:'no', label:'Søknadspliktig' },
+      { task:'Rive eller flytte bærende vegger',
+        note:'Alltid søknadspliktig. Krever godkjent foretak med ansvarsrett. PBL § 20-2.',
+        status:'no', label:'Søknadspliktig' },
+      { task:'Sette opp gjerde mot vei (over 1,5 m)',
+        note:'Søknadspliktig etter PBL § 20-2. Gjerde under 1,5 m mot nabo er normalt unntatt.',
+        status:'cond', label:'Avhenger av høyde' },
+    ];
+    var rows2 = [
+      { task:'Nabovarsel (PBL § 21-3)',
+        note:'Påkrevd ved alle søknadspliktige tiltak. Naboen har 2 ukers frist til å uttale seg. Send skriftlig med målsatt situasjonskart.',
+        status:'cond', label:'Alltid ved søknad' },
+      { task:'Innsyn i reguleringsplan og kommuneplan',
+        note:'Gratis og åpent for alle via arealplaner.no eller kommunens nettside. Reguleringsplanen slår fast hva som er tillatt på din eiendom.',
+        status:'ok', label:'Gratis innsyn' },
+      { task:'Dispensasjon fra reguleringsplan',
+        note:'Du kan søke dispensasjon fra plan (PBL § 19-2) hvis du vil bygge noe planen ikke tillater. Kommunen avgjør – tar 4–12 uker.',
+        status:'cond', label:'Søk dispensasjon' },
+      { task:'Plikt til å melde fra om ferdig bygg',
+        note:'Søknadspliktige tiltak krever ferdigattest eller midlertidig brukstillatelse (PBL § 21-10). Manglende attest kan gi problemer ved salg.',
+        status:'cond', label:'Ferdigattest påkrevd' },
+    ];
+
+    function makeKomRows(rows) {
+      return rows.map(function(r) {
+        var spClass = r.status === 'ok' ? 'sp-ok' : r.status === 'no' ? 'sp-no' : 'sp-cond';
+        return '<div class="law-row">' +
+          '<div class="law-row-content">' +
+            '<div class="law-row-task">' + r.task + '</div>' +
+            '<div class="law-row-note">' + r.note + '</div>' +
+          '</div>' +
+          '<div class="law-row-status"><span class="status-pill ' + spClass + '">' + r.label + '</span></div>' +
+        '</div>';
+      }).join('');
+    }
+
+    var links = [
+      { href:'https://www.dibk.no/om-byggesak/hva-kan-du-bygge/', label:'Hva kan du bygge? – Direktoratet for byggkvalitet', icon:'ti-building-estate' },
+      { href:'https://soknad.dibk.no', label:'Søk digitalt – ByggSøk (dibk.no)', icon:'ti-file-arrow-right' },
+      { href:'https://www.arealplaner.no', label:'Finn reguleringsplan – arealplaner.no', icon:'ti-map-2' },
+      { href:'https://www.kommunekart.com', label:'Kommunekart – vis plangrenser og eiendomsgrenser', icon:'ti-map-pin' },
+      { href:ld2+'/lov/2008-06-27-71', label:'Plan- og bygningsloven (PBL) – lovdata.no', icon:'ti-scale' },
+      { href:ld2+'/forskrift/2010-03-26-488', label:'SAK10 – byggesaksforskriften', icon:'ti-scale' },
+    ];
+
+    kommunalHtml =
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin:22px 0 10px;">Kommunale regler – bygg og fasade 🇳🇴</div>' +
+      '<div class="law-category">' +
+        '<div class="law-cat-header">' +
+          '<div class="law-cat-icon bygg"><i class="ti ti-building-community"></i></div>' +
+          '<div>' +
+            '<div class="law-cat-title">Fasadeendring og tilbygg</div>' +
+            '<div class="law-cat-sub">PBL § 20-2 · SAK10 § 4-1 &middot; <a href="'+ld2+'/lov/2008-06-27-71" target="_blank" class="law-ref"><i class="ti ti-external-link"></i>Lovdata</a></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="law-table">' + makeKomRows(rows1) + '</div>' +
+      '</div>' +
+      '<div class="law-category">' +
+        '<div class="law-cat-header">' +
+          '<div class="law-cat-icon nabovarsel"><i class="ti ti-users"></i></div>' +
+          '<div>' +
+            '<div class="law-cat-title">Nabovarsel, innsyn og ferdigattest</div>' +
+            '<div class="law-cat-sub">PBL § 21-3 og § 21-10 &middot; <a href="'+ld2+'/lov/2008-06-27-71/%C2%A721-3" target="_blank" class="law-ref"><i class="ti ti-external-link"></i>Lovdata</a></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="law-table">' + makeKomRows(rows2) + '</div>' +
+      '</div>' +
+      '<div class="law-category" style="overflow:hidden;">' +
+        '<div class="law-cat-header">' +
+          '<div class="law-cat-icon gen"><i class="ti ti-link"></i></div>' +
+          '<div><div class="law-cat-title">Nyttige kommunale verktøy</div>' +
+            '<div class="law-cat-sub">Åpne og gratis ressurser</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="padding:4px 16px 16px;">' +
+          links.map(function(l) {
+            return '<a href="'+l.href+'" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--paper3);text-decoration:none;color:var(--ink);">' +
+              '<i class="ti '+l.icon+'" style="font-size:17px;color:var(--blue);flex-shrink:0;"></i>' +
+              '<span style="font-size:13px;flex:1;">' + l.label + '</span>' +
+              '<i class="ti ti-external-link" style="font-size:12px;color:var(--ink4);flex-shrink:0;"></i>' +
+            '</a>';
+          }).join('') +
+          '<p style="font-size:11.5px;color:var(--ink3);margin-top:10px;line-height:1.6;">Regler varierer mellom kommuner. Sjekk alltid gjeldende reguleringsplan og kontakt plan- og bygningsetaten i din kommune ved tvil.</p>' +
+        '</div>' +
+      '</div>';
+  }
+
   document.getElementById('page-juridisk').innerHTML =
     '<div class="page-header">' +
       '<h2>' + t('legalTitle') + '</h2>' +
@@ -3816,6 +3929,7 @@ function renderJuridisk() {
     '<div class="law-intro"><p>' + ld.intro + '</p></div>' +
     legendHtml +
     catsHtml +
+    kommunalHtml +
     '<div class="law-disclaimer"><i class="ti ti-alert-triangle"></i><span>' + t('legalDisclaimer') + '</span></div>';
 }
 
