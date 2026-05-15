@@ -2409,6 +2409,8 @@ const APP = {
   activeAddr:   null,
   locale:       { lang: 'no', country: 'NO' },
   claudeApiKey: '',
+  geminiApiKey: '',
+  aiProvider:   'auto', // 'auto' | 'claude' | 'gemini'
 };
 
 /* ════════════════════════════════════════
@@ -2440,6 +2442,8 @@ function saveAppSettings() {
       theme:        APP.theme,
       locale:       APP.locale,
       claudeApiKey: APP.claudeApiKey,
+      geminiApiKey: APP.geminiApiKey,
+      aiProvider:   APP.aiProvider,
     }));
   } catch {}
 }
@@ -3425,19 +3429,53 @@ function renderInnstillinger() {
       </div>
     </div>
 
-    <div class="settings-section-label">${t('claudeApiKeyLabel')}</div>
+    <div class="settings-section-label">${t('aiProviderLabel')} – AI-analyse</div>
     <div class="settings-card">
       <div style="padding:16px;">
-        <p style="font-size:12px;color:var(--ink3);margin-bottom:10px;line-height:1.5;">${t('claudeApiKeyDesc')}. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--blue);">console.anthropic.com</a></p>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="password" id="claude-key-inp" value="${APP.claudeApiKey || ''}" placeholder="sk-ant-api03-…"
-            style="flex:1;font-size:14px;padding:9px 11px;border:1px solid var(--paper4);border-radius:var(--r-sm);background:var(--warm-white);color:var(--ink);"
-            oninput="APP.claudeApiKey=this.value;saveAppSettings()">
-          <button class="btn-secondary" style="font-size:12px;padding:9px 12px;flex-shrink:0;" onclick="document.getElementById('claude-key-inp').type=document.getElementById('claude-key-inp').type==='password'?'text':'password'">
-            <i class="ti ti-eye"></i>
-          </button>
+
+        <!-- Provider pills (only when both keys are set) -->
+        ${(APP.claudeApiKey && APP.geminiApiKey) ? `
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:6px;">${t('aiProviderLabel')}</div>
+          <div style="display:flex;gap:6px;">
+            ${['auto','claude','gemini'].map(function(p){
+              var active = APP.aiProvider === p;
+              var label  = p==='auto' ? t('aiProviderAuto') : p==='claude' ? t('aiProviderClaude') : t('aiProviderGemini');
+              return '<button class="pill'+(active?' active':'')+'" onclick="APP.aiProvider=\''+p+'\';saveAppSettings();renderInnstillinger()">'+label+'</button>';
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- Claude key -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:4px;">${t('claudeApiKeyLabel')}</div>
+          <p style="font-size:11.5px;color:var(--ink3);margin-bottom:8px;">${t('claudeApiKeyDesc')} · <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--blue);">console.anthropic.com</a></p>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="password" id="claude-key-inp" value="${APP.claudeApiKey || ''}" placeholder="sk-ant-api03-…"
+              style="flex:1;font-size:14px;padding:9px 11px;border:1px solid var(--paper4);border-radius:var(--r-sm);background:var(--warm-white);color:var(--ink);"
+              oninput="APP.claudeApiKey=this.value;saveAppSettings();renderInnstillinger()">
+            <button class="btn-secondary" style="font-size:12px;padding:9px 12px;flex-shrink:0;" onclick="var i=document.getElementById('claude-key-inp');i.type=i.type==='password'?'text':'password'">
+              <i class="ti ti-eye"></i>
+            </button>
+          </div>
+          ${APP.claudeApiKey ? '<p style="font-size:11px;color:var(--green);margin-top:5px;"><i class="ti ti-circle-check"></i> Lagret</p>' : ''}
         </div>
-        ${APP.claudeApiKey ? '<p style="font-size:11px;color:var(--green);margin-top:6px;"><i class="ti ti-circle-check"></i> Nøkkel lagret</p>' : ''}
+
+        <!-- Gemini key -->
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:4px;">${t('geminiApiKeyLabel')} <span style="font-size:10px;background:var(--green-soft);color:var(--green);border-radius:20px;padding:1px 7px;font-weight:600;letter-spacing:.03em;">GRATIS</span></div>
+          <p style="font-size:11.5px;color:var(--ink3);margin-bottom:8px;">${t('geminiApiKeyDesc')} · <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--blue);">aistudio.google.com</a></p>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="password" id="gemini-key-inp" value="${APP.geminiApiKey || ''}" placeholder="AIza…"
+              style="flex:1;font-size:14px;padding:9px 11px;border:1px solid var(--paper4);border-radius:var(--r-sm);background:var(--warm-white);color:var(--ink);"
+              oninput="APP.geminiApiKey=this.value;saveAppSettings();renderInnstillinger()">
+            <button class="btn-secondary" style="font-size:12px;padding:9px 12px;flex-shrink:0;" onclick="var i=document.getElementById('gemini-key-inp');i.type=i.type==='password'?'text':'password'">
+              <i class="ti ti-eye"></i>
+            </button>
+          </div>
+          ${APP.geminiApiKey ? '<p style="font-size:11px;color:var(--green);margin-top:5px;"><i class="ti ti-circle-check"></i> Lagret</p>' : ''}
+        </div>
+
       </div>
     </div>
 
@@ -3846,6 +3884,8 @@ const STRINGS = {
     scanErrApi:'API-feil. Sjekk at nøkkelen er gyldig.',
     scanErrParse:'Kunne ikke tolke svaret fra Claude AI.',
     claudeApiKeyLabel:'Claude API-nøkkel', claudeApiKeyDesc:'Brukes til å analysere tilstandsrapporter med AI',
+    geminiApiKeyLabel:'Google Gemini API-nøkkel', geminiApiKeyDesc:'Gratis alternativ – hent nøkkel på aistudio.google.com',
+    aiProviderLabel:'Aktiv AI', aiProviderAuto:'Automatisk', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
     catKjokken:'Kjøkken', catBad:'Bad', catStue:'Stue', catSoverom:'Soverom',
     catEntre:'Entré/Gang', catUtvendig:'Utvendig', catHage:'Hage',
     catLoft:'Loft/Kjeller', catAnnet:'Annet',
@@ -3941,6 +3981,8 @@ const STRINGS = {
     scanErrApi:'API-fel. Kontrollera att nyckeln är giltig.',
     scanErrParse:'Kunde inte tolka svaret från Claude AI.',
     claudeApiKeyLabel:'Claude API-nyckel', claudeApiKeyDesc:'Används för att analysera besiktningsrapporter med AI',
+    geminiApiKeyLabel:'Google Gemini API-nyckel', geminiApiKeyDesc:'Gratis alternativ – hämta nyckel på aistudio.google.com',
+    aiProviderLabel:'Aktiv AI', aiProviderAuto:'Automatisk', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
     catKjokken:'Kök', catBad:'Badrum', catStue:'Vardagsrum', catSoverom:'Sovrum',
     catEntre:'Hall/Entré', catUtvendig:'Utvändig', catHage:'Trädgård',
     catLoft:'Vind/Källare', catAnnet:'Övrigt',
@@ -4035,6 +4077,8 @@ const STRINGS = {
     scanErrApi:'API-fejl. Kontroller at nøglen er gyldig.',
     scanErrParse:'Kunne ikke tolke svaret fra Claude AI.',
     claudeApiKeyLabel:'Claude API-nøgle', claudeApiKeyDesc:'Bruges til at analysere tilstandsrapporter med AI',
+    geminiApiKeyLabel:'Google Gemini API-nøgle', geminiApiKeyDesc:'Gratis alternativ – hent nøgle på aistudio.google.com',
+    aiProviderLabel:'Aktiv AI', aiProviderAuto:'Automatisk', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
     catKjokken:'Køkken', catBad:'Badeværelse', catStue:'Stue', catSoverom:'Soveværelse',
     catEntre:'Entre/Gang', catUtvendig:'Udvendig', catHage:'Have',
     catLoft:'Loft/Kælder', catAnnet:'Andet',
@@ -4129,6 +4173,8 @@ const STRINGS = {
     scanErrApi:'API error. Check that the key is valid.',
     scanErrParse:'Could not interpret the response from Claude AI.',
     claudeApiKeyLabel:'Claude API key', claudeApiKeyDesc:'Used to analyse condition reports with AI',
+    geminiApiKeyLabel:'Google Gemini API key', geminiApiKeyDesc:'Free alternative – get a key at aistudio.google.com',
+    aiProviderLabel:'Active AI', aiProviderAuto:'Automatic', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
     catKjokken:'Kitchen', catBad:'Bathroom', catStue:'Living room', catSoverom:'Bedroom',
     catEntre:'Hallway', catUtvendig:'Exterior', catHage:'Garden',
     catLoft:'Loft/Basement', catAnnet:'Other',
@@ -4223,6 +4269,8 @@ const STRINGS = {
     scanErrApi:'API-Fehler. Überprüfen Sie ob der Schlüssel gültig ist.',
     scanErrParse:'Antwort von Claude AI konnte nicht interpretiert werden.',
     claudeApiKeyLabel:'Claude API-Schlüssel', claudeApiKeyDesc:'Wird zur Analyse von Zustandsberichten mit AI verwendet',
+    geminiApiKeyLabel:'Google Gemini API-Schlüssel', geminiApiKeyDesc:'Kostenlose Alternative – Schlüssel unter aistudio.google.com',
+    aiProviderLabel:'Aktive AI', aiProviderAuto:'Automatisch', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
     catKjokken:'Küche', catBad:'Badezimmer', catStue:'Wohnzimmer', catSoverom:'Schlafzimmer',
     catEntre:'Flur/Eingang', catUtvendig:'Außen', catHage:'Garten',
     catLoft:'Dachboden/Keller', catAnnet:'Sonstiges',
@@ -4317,6 +4365,8 @@ const STRINGS = {
     scanErrApi:'API-fout. Controleer of de sleutel geldig is.',
     scanErrParse:'Kon het antwoord van Claude AI niet interpreteren.',
     claudeApiKeyLabel:'Claude API-sleutel', claudeApiKeyDesc:'Wordt gebruikt om bouwkundige rapporten met AI te analyseren',
+    geminiApiKeyLabel:'Google Gemini API-sleutel', geminiApiKeyDesc:'Gratis alternatief – sleutel ophalen op aistudio.google.com',
+    aiProviderLabel:'Actieve AI', aiProviderAuto:'Automatisch', aiProviderClaude:'Claude', aiProviderGemini:'Gemini',
     catKjokken:'Keuken', catBad:'Badkamer', catStue:'Woonkamer', catSoverom:'Slaapkamer',
     catEntre:'Gang/Entree', catUtvendig:'Buiten', catHage:'Tuin',
     catLoft:'Zolder/Kelder', catAnnet:'Overig',
@@ -6523,28 +6573,61 @@ async function extractPdfText(file) {
   return lines.join('\n');
 }
 
-async function callClaudeForReport(text) {
-  var key = APP.claudeApiKey;
-  if (!key) { var e = new Error('no_key'); e.code = 'no_key'; throw e; }
-
-  /* Strip PDF extraction artefacts that can corrupt the JSON payload */
+/* ── Shared prompt builder ── */
+function buildReportPrompt(text) {
   var clean = text
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')  // control chars
-    .replace(/ {3,}/g, '  ')                               // collapse whitespace
-    .slice(0, 45000);                                       // stay well within limits
-
-  var prompt =
-    'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
+    .replace(/ {3,}/g, '  ')
+    .slice(0, 45000);
+  return 'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
     'Finn alle bygningsdeler med tilstandsgrad TG 2 eller TG 3 (ignorer TG 0, TG 1 og IU/TGI). ' +
     'Svar UTELUKKENDE med en JSON-array – ingen markdown, ingen annen tekst:\n' +
-    '[\n' +
-    '  {\n' +
+    '[\n  {\n' +
     '    "tittel": "Bygningsdel – kort problembeskrivelse (maks 55 tegn)",\n' +
     '    "tg": 2,\n' +
     '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
     '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)"\n' +
-    '  }\n' +
-    ']\n\nRAPPORT:\n' + clean;
+    '  }\n]\n\nRAPPORT:\n' + clean;
+}
+
+function parseJsonFromModel(raw) {
+  return JSON.parse(
+    raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+  );
+}
+
+/* ── Gemini ── */
+async function callGeminiForReport(text) {
+  var key = APP.geminiApiKey;
+  if (!key) { var e = new Error('no_key'); e.code = 'no_key'; throw e; }
+
+  var res = await fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: buildReportPrompt(text) }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
+      }),
+    }
+  );
+  if (!res.ok) {
+    var errBody = await res.json().catch(function() { return {}; });
+    var detail  = (errBody.error && errBody.error.message) || JSON.stringify(errBody);
+    var e2 = new Error('api'); e2.code = 'api'; e2.status = res.status; e2.detail = detail;
+    throw e2;
+  }
+  var data = await res.json();
+  var raw  = (((data.candidates || [])[0] || {}).content || {});
+  raw = ((raw.parts || [])[0] || {}).text || '';
+  return parseJsonFromModel(raw);
+}
+
+/* ── Claude ── */
+async function callClaudeForReport(text) {
+  var key = APP.claudeApiKey;
+  if (!key) { var e = new Error('no_key'); e.code = 'no_key'; throw e; }
 
   var res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -6557,7 +6640,7 @@ async function callClaudeForReport(text) {
     body: JSON.stringify({
       model: 'claude-3-5-haiku-20241022',
       max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: 'user', content: buildReportPrompt(text) }],
     }),
   });
 
@@ -6568,9 +6651,24 @@ async function callClaudeForReport(text) {
     throw e2;
   }
   var data = await res.json();
-  var raw  = ((data.content[0] || {}).text || '').trim()
-               .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  return JSON.parse(raw);
+  return parseJsonFromModel(((data.content[0] || {}).text || ''));
+}
+
+/* ── Pick provider and call ── */
+function resolveProvider() {
+  var p = APP.aiProvider;
+  if (p === 'gemini') return 'gemini';
+  if (p === 'claude') return 'claude';
+  // auto: prefer Claude if both set, else whichever is set
+  if (APP.claudeApiKey && APP.geminiApiKey) return 'claude';
+  if (APP.geminiApiKey) return 'gemini';
+  return 'claude';
+}
+function hasAnyKey() { return !!(APP.claudeApiKey || APP.geminiApiKey); }
+async function callReportApi(text) {
+  return resolveProvider() === 'gemini'
+    ? callGeminiForReport(text)
+    : callClaudeForReport(text);
 }
 
 function openScanModal() {
@@ -6592,7 +6690,7 @@ function renderScanModal() {
   if (!body) return;
 
   if (_scanState === 'idle') {
-    var apiSection = APP.claudeApiKey
+    var apiSection = hasAnyKey()
       /* Has key → show dropzone */
       ? '<label class="scan-dropzone" for="scan-file-inp">' +
           '<i class="ti ti-file-search" style="font-size:34px;"></i>' +
@@ -6729,7 +6827,7 @@ async function startReportScan(file) {
 
   _scanState = 'analysing'; renderScanModal();
   try {
-    var findings = await callClaudeForReport(text);
+    var findings = await callReportApi(text);
     _scanState = 'results'; _scanData = { findings: findings }; _scanSelected = null;
   } catch(err) {
     _scanState = 'error';
@@ -6929,6 +7027,8 @@ function closeImgViewer() {
   if (saved.haUrl)        APP.haUrl        = saved.haUrl;
   if (saved.haToken)      APP.haToken      = saved.haToken;
   if (saved.claudeApiKey) APP.claudeApiKey = saved.claudeApiKey;
+  if (saved.geminiApiKey) APP.geminiApiKey = saved.geminiApiKey;
+  if (saved.aiProvider)   APP.aiProvider   = saved.aiProvider;
 
   // Restore theme
   const savedTheme = saved.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
