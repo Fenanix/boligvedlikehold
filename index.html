@@ -3875,7 +3875,7 @@ const STRINGS = {
     scanDesc:'Last opp en tilstandsrapport (NS 3600) eller salgsrapport. Appen finner TG2- og TG3-avvik og lager prosjekter automatisk.',
     scanNoKey:'Legg til en Claude API-nøkkel under Innstillinger for å bruke denne funksjonen.',
     scanDrop:'Slipp PDF her, eller trykk for å velge',
-    scanProcessingPdf:'Leser PDF…', scanProcessingAi:'Analyserer med Claude AI…',
+    scanProcessingPdf:'Leser PDF…', scanProcessingAi:'Analyserer med {ai}…',
     scanFoundItems:'avvik funnet', scanSelected:'valgt',
     scanImport:'Opprett {n} prosjekter', scanNone:'Ingen TG2/TG3-avvik funnet – rapporten ser bra ut!',
     scanDone:'{n} prosjekter opprettet', scanRetry:'Prøv igjen',
@@ -3972,7 +3972,7 @@ const STRINGS = {
     scanDesc:'Ladda upp en besiktningsrapport eller säljrapport. Appen hittar TG2- och TG3-avvikelser och skapar projekt automatiskt.',
     scanNoKey:'Lägg till en Claude API-nyckel under Inställningar för att använda den här funktionen.',
     scanDrop:'Släpp PDF här, eller tryck för att välja',
-    scanProcessingPdf:'Läser PDF…', scanProcessingAi:'Analyserar med Claude AI…',
+    scanProcessingPdf:'Läser PDF…', scanProcessingAi:'Analyserar med {ai}…',
     scanFoundItems:'avvikelser hittades', scanSelected:'valda',
     scanImport:'Skapa {n} projekt', scanNone:'Inga TG2/TG3-avvikelser hittades – rapporten ser bra ut!',
     scanDone:'{n} projekt skapade', scanRetry:'Försök igen',
@@ -4068,7 +4068,7 @@ const STRINGS = {
     scanDesc:'Upload en tilstandsrapport eller salgsrapport. Appen finder TG2- og TG3-fejl og opretter projekter automatisk.',
     scanNoKey:'Tilføj en Claude API-nøgle under Indstillinger for at bruge denne funktion.',
     scanDrop:'Drop PDF her, eller tryk for at vælge',
-    scanProcessingPdf:'Læser PDF…', scanProcessingAi:'Analyserer med Claude AI…',
+    scanProcessingPdf:'Læser PDF…', scanProcessingAi:'Analyserer med {ai}…',
     scanFoundItems:'fejl fundet', scanSelected:'valgt',
     scanImport:'Opret {n} projekter', scanNone:'Ingen TG2/TG3-fejl fundet – rapporten ser god ud!',
     scanDone:'{n} projekter oprettet', scanRetry:'Prøv igen',
@@ -4164,7 +4164,7 @@ const STRINGS = {
     scanDesc:'Upload a condition report or sales report. The app finds TG2 and TG3 defects and creates projects automatically.',
     scanNoKey:'Add a Claude API key in Settings to use this feature.',
     scanDrop:'Drop PDF here, or tap to select',
-    scanProcessingPdf:'Reading PDF…', scanProcessingAi:'Analysing with Claude AI…',
+    scanProcessingPdf:'Reading PDF…', scanProcessingAi:'Analysing with {ai}…',
     scanFoundItems:'defects found', scanSelected:'selected',
     scanImport:'Create {n} projects', scanNone:'No TG2/TG3 defects found – the report looks good!',
     scanDone:'{n} projects created', scanRetry:'Try again',
@@ -4260,7 +4260,7 @@ const STRINGS = {
     scanDesc:'Laden Sie einen Zustandsbericht oder Verkaufsbericht hoch. Die App findet TG2- und TG3-Mängel und erstellt automatisch Projekte.',
     scanNoKey:'Fügen Sie einen Claude API-Schlüssel unter Einstellungen hinzu, um diese Funktion zu nutzen.',
     scanDrop:'PDF hier ablegen oder tippen zum Auswählen',
-    scanProcessingPdf:'PDF wird gelesen…', scanProcessingAi:'Wird mit Claude AI analysiert…',
+    scanProcessingPdf:'PDF wird gelesen…', scanProcessingAi:'Wird mit {ai} analysiert…',
     scanFoundItems:'Mängel gefunden', scanSelected:'ausgewählt',
     scanImport:'{n} Projekte erstellen', scanNone:'Keine TG2/TG3-Mängel gefunden – der Bericht sieht gut aus!',
     scanDone:'{n} Projekte erstellt', scanRetry:'Erneut versuchen',
@@ -4356,7 +4356,7 @@ const STRINGS = {
     scanDesc:'Upload een bouwkundig rapport of verkooprapport. De app vindt TG2- en TG3-gebreken en maakt automatisch projecten aan.',
     scanNoKey:'Voeg een Claude API-sleutel toe onder Instellingen om deze functie te gebruiken.',
     scanDrop:'PDF hier neerzetten of tikken om te kiezen',
-    scanProcessingPdf:'PDF wordt gelezen…', scanProcessingAi:'Analyseren met Claude AI…',
+    scanProcessingPdf:'PDF wordt gelezen…', scanProcessingAi:'Analyseren met {ai}…',
     scanFoundItems:'gebreken gevonden', scanSelected:'geselecteerd',
     scanImport:'{n} projecten aanmaken', scanNone:'Geen TG2/TG3-gebreken gevonden – het rapport ziet er goed uit!',
     scanDone:'{n} projecten aangemaakt', scanRetry:'Opnieuw proberen',
@@ -6782,7 +6782,8 @@ function renderScanModal() {
   }
 
   if (_scanState === 'reading' || _scanState === 'analysing') {
-    var msg = _scanState === 'reading' ? t('scanProcessingPdf') : t('scanProcessingAi');
+    var aiName = resolveProvider() === 'gemini' ? 'Gemini' : 'Claude';
+    var msg = _scanState === 'reading' ? t('scanProcessingPdf') : t('scanProcessingAi').replace('{ai}', aiName);
     body.innerHTML =
       '<div style="text-align:center;padding:48px 0;">' +
         '<div class="scan-spinner"></div>' +
