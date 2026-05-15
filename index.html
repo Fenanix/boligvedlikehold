@@ -1903,6 +1903,33 @@ input, select { font-family: var(--sans); }
   cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 
+/* ── Report scanner ── */
+.scan-dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; border: 2px dashed var(--paper4); border-radius: var(--r-lg);
+  padding: 40px 20px; color: var(--ink3); cursor: pointer; text-align: center;
+  font-size: 14px; transition: border-color .15s, color .15s; background: var(--paper2);
+}
+.scan-dropzone:hover { border-color: var(--ink3); color: var(--ink2); }
+.scan-spinner {
+  width: 40px; height: 40px; border: 3px solid var(--paper3);
+  border-top-color: var(--ink2); border-radius: 50%;
+  animation: spin .7s linear infinite; margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.scan-tg-badge {
+  font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+  flex-shrink: 0; letter-spacing: .04em;
+}
+.scan-tg-badge.tg2 { background: var(--orange-soft); color: var(--orange); }
+.scan-tg-badge.tg3 { background: var(--red-soft);    color: var(--red);    }
+.scan-result-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+  background: var(--warm-white); border: 1px solid var(--paper3);
+  border-radius: var(--r); transition: opacity .12s;
+}
+.scan-result-item.unchecked { opacity: .45; }
+
 /* Empty state for renovation */
 .ren-empty {
   text-align: center;
@@ -2330,6 +2357,18 @@ input, select { font-family: var(--sans); }
 </div>
 
 <!-- PROJECT MODAL -->
+<div id="scan-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:960;align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeScanModal()">
+  <div style="background:var(--warm-white);border-radius:var(--r-xl) var(--r-xl) 0 0;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;padding:24px 20px calc(env(safe-area-inset-bottom,0px) + 24px);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h3 style="font-family:var(--serif);font-size:19px;font-weight:400;margin:0;">
+        <i class="ti ti-file-search" style="margin-right:8px;font-size:18px;vertical-align:-2px;color:var(--blue)"></i><span id="scan-modal-title">Tilstandsrapport</span>
+      </h3>
+      <button onclick="closeScanModal()" style="background:none;border:none;font-size:20px;color:var(--ink3);cursor:pointer;padding:4px;"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="scan-body"></div>
+  </div>
+</div>
+
 <div id="img-viewer" onclick="if(event.target===this)closeImgViewer()">
   <img id="img-viewer-img" src="" alt=""/>
   <button id="img-viewer-close" onclick="closeImgViewer()"><i class="ti ti-x"></i></button>
@@ -2369,6 +2408,7 @@ const APP = {
   addresses:    [],
   activeAddr:   null,
   locale:       { lang: 'no', country: 'NO' },
+  claudeApiKey: '',
 };
 
 /* ════════════════════════════════════════
@@ -2395,10 +2435,11 @@ function saveAppSettings() {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
       boligtype: APP.boligtype,
-      haUrl:     APP.haUrl,
-      haToken:   APP.haToken,
-      theme:     APP.theme,
-      locale:    APP.locale,
+      haUrl:        APP.haUrl,
+      haToken:      APP.haToken,
+      theme:        APP.theme,
+      locale:       APP.locale,
+      claudeApiKey: APP.claudeApiKey,
     }));
   } catch {}
 }
@@ -3384,6 +3425,22 @@ function renderInnstillinger() {
       </div>
     </div>
 
+    <div class="settings-section-label">${t('claudeApiKeyLabel')}</div>
+    <div class="settings-card">
+      <div style="padding:16px;">
+        <p style="font-size:12px;color:var(--ink3);margin-bottom:10px;line-height:1.5;">${t('claudeApiKeyDesc')}. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--blue);">console.anthropic.com</a></p>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="password" id="claude-key-inp" value="${APP.claudeApiKey || ''}" placeholder="sk-ant-api03-…"
+            style="flex:1;font-size:14px;padding:9px 11px;border:1px solid var(--paper4);border-radius:var(--r-sm);background:var(--warm-white);color:var(--ink);"
+            oninput="APP.claudeApiKey=this.value;saveAppSettings()">
+          <button class="btn-secondary" style="font-size:12px;padding:9px 12px;flex-shrink:0;" onclick="document.getElementById('claude-key-inp').type=document.getElementById('claude-key-inp').type==='password'?'text':'password'">
+            <i class="ti ti-eye"></i>
+          </button>
+        </div>
+        ${APP.claudeApiKey ? '<p style="font-size:11px;color:var(--green);margin-top:6px;"><i class="ti ti-circle-check"></i> Nøkkel lagret</p>' : ''}
+      </div>
+    </div>
+
     <div class="settings-section-label">Om appen</div>
     <div class="settings-card">
       <div style="padding:16px;">
@@ -3776,6 +3833,19 @@ const STRINGS = {
     projDefaultName:'Nytt prosjekt', projUpdatedToast:'Prosjekt oppdatert.', projAddedToast:'lagt til!',
     projDeleteConfirm:'Slette «{name}»? Dette kan ikke angres.',
     projPhotos:'Bilder', projAddPhoto:'Legg til',
+    scanReport:'Scan rapport', scanTitle:'Tilstandsrapport',
+    scanDesc:'Last opp en tilstandsrapport (NS 3600) eller salgsrapport. Appen finner TG2- og TG3-avvik og lager prosjekter automatisk.',
+    scanNoKey:'Legg til en Claude API-nøkkel under Innstillinger for å bruke denne funksjonen.',
+    scanDrop:'Slipp PDF her, eller trykk for å velge',
+    scanProcessingPdf:'Leser PDF…', scanProcessingAi:'Analyserer med Claude AI…',
+    scanFoundItems:'avvik funnet', scanSelected:'valgt',
+    scanImport:'Opprett {n} prosjekter', scanNone:'Ingen TG2/TG3-avvik funnet – rapporten ser bra ut!',
+    scanDone:'{n} prosjekter opprettet', scanRetry:'Prøv igjen',
+    scanErrPdf:'Kunne ikke lese PDF-filen. Prøv en annen fil.',
+    scanErrNoKey:'Mangler Claude API-nøkkel. Gå til Innstillinger.',
+    scanErrApi:'API-feil. Sjekk at nøkkelen er gyldig.',
+    scanErrParse:'Kunne ikke tolke svaret fra Claude AI.',
+    claudeApiKeyLabel:'Claude API-nøkkel', claudeApiKeyDesc:'Brukes til å analysere tilstandsrapporter med AI',
     catKjokken:'Kjøkken', catBad:'Bad', catStue:'Stue', catSoverom:'Soverom',
     catEntre:'Entré/Gang', catUtvendig:'Utvendig', catHage:'Hage',
     catLoft:'Loft/Kjeller', catAnnet:'Annet',
@@ -3858,6 +3928,19 @@ const STRINGS = {
     projDefaultName:'Nytt projekt', projUpdatedToast:'Projekt uppdaterat.', projAddedToast:'tillagd!',
     projDeleteConfirm:'Ta bort «{name}»? Detta kan inte ångras.',
     projPhotos:'Bilder', projAddPhoto:'Lägg till',
+    scanReport:'Skanna rapport', scanTitle:'Besiktningsrapport',
+    scanDesc:'Ladda upp en besiktningsrapport eller säljrapport. Appen hittar TG2- och TG3-avvikelser och skapar projekt automatiskt.',
+    scanNoKey:'Lägg till en Claude API-nyckel under Inställningar för att använda den här funktionen.',
+    scanDrop:'Släpp PDF här, eller tryck för att välja',
+    scanProcessingPdf:'Läser PDF…', scanProcessingAi:'Analyserar med Claude AI…',
+    scanFoundItems:'avvikelser hittades', scanSelected:'valda',
+    scanImport:'Skapa {n} projekt', scanNone:'Inga TG2/TG3-avvikelser hittades – rapporten ser bra ut!',
+    scanDone:'{n} projekt skapade', scanRetry:'Försök igen',
+    scanErrPdf:'Kunde inte läsa PDF-filen. Prova en annan fil.',
+    scanErrNoKey:'Saknar Claude API-nyckel. Gå till Inställningar.',
+    scanErrApi:'API-fel. Kontrollera att nyckeln är giltig.',
+    scanErrParse:'Kunde inte tolka svaret från Claude AI.',
+    claudeApiKeyLabel:'Claude API-nyckel', claudeApiKeyDesc:'Används för att analysera besiktningsrapporter med AI',
     catKjokken:'Kök', catBad:'Badrum', catStue:'Vardagsrum', catSoverom:'Sovrum',
     catEntre:'Hall/Entré', catUtvendig:'Utvändig', catHage:'Trädgård',
     catLoft:'Vind/Källare', catAnnet:'Övrigt',
@@ -3939,6 +4022,19 @@ const STRINGS = {
     projDefaultName:'Nyt projekt', projUpdatedToast:'Projekt opdateret.', projAddedToast:'tilføjet!',
     projDeleteConfirm:'Slette «{name}»? Dette kan ikke fortrydes.',
     projPhotos:'Billeder', projAddPhoto:'Tilføj',
+    scanReport:'Scan rapport', scanTitle:'Tilstandsrapport',
+    scanDesc:'Upload en tilstandsrapport eller salgsrapport. Appen finder TG2- og TG3-fejl og opretter projekter automatisk.',
+    scanNoKey:'Tilføj en Claude API-nøgle under Indstillinger for at bruge denne funktion.',
+    scanDrop:'Drop PDF her, eller tryk for at vælge',
+    scanProcessingPdf:'Læser PDF…', scanProcessingAi:'Analyserer med Claude AI…',
+    scanFoundItems:'fejl fundet', scanSelected:'valgt',
+    scanImport:'Opret {n} projekter', scanNone:'Ingen TG2/TG3-fejl fundet – rapporten ser god ud!',
+    scanDone:'{n} projekter oprettet', scanRetry:'Prøv igen',
+    scanErrPdf:'Kunne ikke læse PDF-filen. Prøv en anden fil.',
+    scanErrNoKey:'Mangler Claude API-nøgle. Gå til Indstillinger.',
+    scanErrApi:'API-fejl. Kontroller at nøglen er gyldig.',
+    scanErrParse:'Kunne ikke tolke svaret fra Claude AI.',
+    claudeApiKeyLabel:'Claude API-nøgle', claudeApiKeyDesc:'Bruges til at analysere tilstandsrapporter med AI',
     catKjokken:'Køkken', catBad:'Badeværelse', catStue:'Stue', catSoverom:'Soveværelse',
     catEntre:'Entre/Gang', catUtvendig:'Udvendig', catHage:'Have',
     catLoft:'Loft/Kælder', catAnnet:'Andet',
@@ -4020,6 +4116,19 @@ const STRINGS = {
     projDefaultName:'New project', projUpdatedToast:'Project updated.', projAddedToast:'added!',
     projDeleteConfirm:'Delete «{name}»? This cannot be undone.',
     projPhotos:'Photos', projAddPhoto:'Add',
+    scanReport:'Scan report', scanTitle:'Condition report',
+    scanDesc:'Upload a condition report or sales report. The app finds TG2 and TG3 defects and creates projects automatically.',
+    scanNoKey:'Add a Claude API key in Settings to use this feature.',
+    scanDrop:'Drop PDF here, or tap to select',
+    scanProcessingPdf:'Reading PDF…', scanProcessingAi:'Analysing with Claude AI…',
+    scanFoundItems:'defects found', scanSelected:'selected',
+    scanImport:'Create {n} projects', scanNone:'No TG2/TG3 defects found – the report looks good!',
+    scanDone:'{n} projects created', scanRetry:'Try again',
+    scanErrPdf:'Could not read the PDF file. Try another file.',
+    scanErrNoKey:'Missing Claude API key. Go to Settings.',
+    scanErrApi:'API error. Check that the key is valid.',
+    scanErrParse:'Could not interpret the response from Claude AI.',
+    claudeApiKeyLabel:'Claude API key', claudeApiKeyDesc:'Used to analyse condition reports with AI',
     catKjokken:'Kitchen', catBad:'Bathroom', catStue:'Living room', catSoverom:'Bedroom',
     catEntre:'Hallway', catUtvendig:'Exterior', catHage:'Garden',
     catLoft:'Loft/Basement', catAnnet:'Other',
@@ -4101,6 +4210,19 @@ const STRINGS = {
     projDefaultName:'Neues Projekt', projUpdatedToast:'Projekt aktualisiert.', projAddedToast:'hinzugefügt!',
     projDeleteConfirm:'«{name}» löschen? Dies kann nicht rückgängig gemacht werden.',
     projPhotos:'Fotos', projAddPhoto:'Hinzufügen',
+    scanReport:'Bericht scannen', scanTitle:'Zustandsbericht',
+    scanDesc:'Laden Sie einen Zustandsbericht oder Verkaufsbericht hoch. Die App findet TG2- und TG3-Mängel und erstellt automatisch Projekte.',
+    scanNoKey:'Fügen Sie einen Claude API-Schlüssel unter Einstellungen hinzu, um diese Funktion zu nutzen.',
+    scanDrop:'PDF hier ablegen oder tippen zum Auswählen',
+    scanProcessingPdf:'PDF wird gelesen…', scanProcessingAi:'Wird mit Claude AI analysiert…',
+    scanFoundItems:'Mängel gefunden', scanSelected:'ausgewählt',
+    scanImport:'{n} Projekte erstellen', scanNone:'Keine TG2/TG3-Mängel gefunden – der Bericht sieht gut aus!',
+    scanDone:'{n} Projekte erstellt', scanRetry:'Erneut versuchen',
+    scanErrPdf:'PDF-Datei konnte nicht gelesen werden. Versuchen Sie eine andere Datei.',
+    scanErrNoKey:'Fehlender Claude API-Schlüssel. Gehen Sie zu Einstellungen.',
+    scanErrApi:'API-Fehler. Überprüfen Sie ob der Schlüssel gültig ist.',
+    scanErrParse:'Antwort von Claude AI konnte nicht interpretiert werden.',
+    claudeApiKeyLabel:'Claude API-Schlüssel', claudeApiKeyDesc:'Wird zur Analyse von Zustandsberichten mit AI verwendet',
     catKjokken:'Küche', catBad:'Badezimmer', catStue:'Wohnzimmer', catSoverom:'Schlafzimmer',
     catEntre:'Flur/Eingang', catUtvendig:'Außen', catHage:'Garten',
     catLoft:'Dachboden/Keller', catAnnet:'Sonstiges',
@@ -4182,6 +4304,19 @@ const STRINGS = {
     projDefaultName:'Nieuw project', projUpdatedToast:'Project bijgewerkt.', projAddedToast:'toegevoegd!',
     projDeleteConfirm:'«{name}» verwijderen? Dit kan niet ongedaan worden gemaakt.',
     projPhotos:"Foto's", projAddPhoto:'Toevoegen',
+    scanReport:'Rapport scannen', scanTitle:'Bouwkundig rapport',
+    scanDesc:'Upload een bouwkundig rapport of verkooprapport. De app vindt TG2- en TG3-gebreken en maakt automatisch projecten aan.',
+    scanNoKey:'Voeg een Claude API-sleutel toe onder Instellingen om deze functie te gebruiken.',
+    scanDrop:'PDF hier neerzetten of tikken om te kiezen',
+    scanProcessingPdf:'PDF wordt gelezen…', scanProcessingAi:'Analyseren met Claude AI…',
+    scanFoundItems:'gebreken gevonden', scanSelected:'geselecteerd',
+    scanImport:'{n} projecten aanmaken', scanNone:'Geen TG2/TG3-gebreken gevonden – het rapport ziet er goed uit!',
+    scanDone:'{n} projecten aangemaakt', scanRetry:'Opnieuw proberen',
+    scanErrPdf:'Kon PDF-bestand niet lezen. Probeer een ander bestand.',
+    scanErrNoKey:'Ontbrekende Claude API-sleutel. Ga naar Instellingen.',
+    scanErrApi:'API-fout. Controleer of de sleutel geldig is.',
+    scanErrParse:'Kon het antwoord van Claude AI niet interpreteren.',
+    claudeApiKeyLabel:'Claude API-sleutel', claudeApiKeyDesc:'Wordt gebruikt om bouwkundige rapporten met AI te analyseren',
     catKjokken:'Keuken', catBad:'Badkamer', catStue:'Woonkamer', catSoverom:'Slaapkamer',
     catEntre:'Gang/Entree', catUtvendig:'Buiten', catHage:'Tuin',
     catLoft:'Zolder/Kelder', catAnnet:'Overig',
@@ -6230,7 +6365,10 @@ function renderRenovering() {
   document.getElementById('page-renovering').innerHTML =
     '<div class="ren-header">' +
       '<h2>' + t('projects') + '</h2>' +
-      '<button class="btn-primary" style="font-size:13px;padding:8px 14px;" onclick="openProjModal()"><i class="ti ti-plus"></i> ' + t('projNew') + '</button>' +
+      '<div style="display:flex;gap:6px;">' +
+        '<button class="btn-secondary" style="font-size:13px;padding:8px 12px;" onclick="openScanModal()" title="' + t('scanReport') + '"><i class="ti ti-file-search"></i> ' + t('scanReport') + '</button>' +
+        '<button class="btn-primary"   style="font-size:13px;padding:8px 14px;" onclick="openProjModal()"><i class="ti ti-plus"></i> ' + t('projNew') + '</button>' +
+      '</div>' +
     '</div>' +
     '<div class="ren-stat-strip">' +
       '<div class="ren-stat"><div class="ren-stat-num" style="color:var(--blue)">' + active + '</div><div class="ren-stat-lbl">' + t('projActive') + '</div></div>' +
@@ -6342,6 +6480,251 @@ function toggleTheme() {
 /* ════════════════════════════════════════
    BOOT
 ════════════════════════════════════════ */
+
+/* ════════════════════════════════════════
+   RAPPORT SCAN  (PDF.js + Claude AI)
+════════════════════════════════════════ */
+var _scanState    = 'idle';
+var _scanData     = null;
+var _scanSelected = null;
+var _pdfjs        = null;
+
+function loadPdfJs() {
+  if (_pdfjs) return Promise.resolve(_pdfjs);
+  return new Promise(function(resolve, reject) {
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      _pdfjs = window.pdfjsLib; resolve(_pdfjs); return;
+    }
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = function() {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      _pdfjs = window.pdfjsLib; resolve(_pdfjs);
+    };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function extractPdfText(file) {
+  var lib = await loadPdfJs();
+  var buf = await file.arrayBuffer();
+  var pdf = await lib.getDocument({ data: buf }).promise;
+  var pages = Math.min(pdf.numPages, 120);
+  var lines = [];
+  for (var i = 1; i <= pages; i++) {
+    var page    = await pdf.getPage(i);
+    var content = await page.getTextContent();
+    lines.push(content.items.map(function(x) { return x.str; }).join(' '));
+  }
+  return lines.join('\n');
+}
+
+async function callClaudeForReport(text) {
+  var key = APP.claudeApiKey;
+  if (!key) { var e = new Error('no_key'); e.code = 'no_key'; throw e; }
+
+  var prompt =
+    'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
+    'Finn alle bygningsdeler med tilstandsgrad TG 2 eller TG 3 (ignorer TG 0, TG 1 og IU/TGI). ' +
+    'Svar UTELUKKENDE med en JSON-array – ingen markdown, ingen annen tekst:\n' +
+    '[\n' +
+    '  {\n' +
+    '    "tittel": "Bygningsdel – kort problembeskrivelse (maks 55 tegn)",\n' +
+    '    "tg": 2,\n' +
+    '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
+    '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)"\n' +
+    '  }\n' +
+    ']\n\nRAPPORT:\n' + text.slice(0, 90000);
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    var body = await res.json().catch(function() { return {}; });
+    var e2 = new Error('api'); e2.code = 'api'; e2.status = res.status;
+    e2.detail = body.error && body.error.message; throw e2;
+  }
+  var data = await res.json();
+  var raw  = ((data.content[0] || {}).text || '').trim()
+               .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  return JSON.parse(raw);
+}
+
+function openScanModal() {
+  _scanState = 'idle'; _scanData = null; _scanSelected = null;
+  var el = document.getElementById('scan-overlay');
+  if (!el) return;
+  el.style.display = 'flex';
+  var titleEl = document.getElementById('scan-modal-title');
+  if (titleEl) titleEl.textContent = t('scanTitle');
+  renderScanModal();
+}
+function closeScanModal() {
+  var el = document.getElementById('scan-overlay');
+  if (el) el.style.display = 'none';
+}
+
+function renderScanModal() {
+  var body = document.getElementById('scan-body');
+  if (!body) return;
+
+  if (_scanState === 'idle') {
+    if (!APP.claudeApiKey) {
+      body.innerHTML =
+        '<div style="background:var(--orange-soft);border:1px solid var(--orange);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.6;color:var(--orange);">' +
+          '<i class="ti ti-key" style="font-size:16px;margin-right:6px;vertical-align:-2px;"></i>' + t('scanNoKey') +
+        '</div>' +
+        '<button class="btn-primary" onclick="closeScanModal();navigate(\'innstillinger\')" style="width:100%;">' +
+          '<i class="ti ti-settings"></i> ' + t('settings') + '</button>';
+      return;
+    }
+    body.innerHTML =
+      '<p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6;">' + t('scanDesc') + '</p>' +
+      '<label class="scan-dropzone" for="scan-file-inp">' +
+        '<i class="ti ti-file-search" style="font-size:34px;"></i>' +
+        '<span style="font-size:13.5px;">' + t('scanDrop') + '</span>' +
+        '<span style="font-size:11px;color:var(--ink4);">PDF</span>' +
+      '</label>' +
+      '<input type="file" id="scan-file-inp" accept=".pdf,application/pdf" style="display:none" onchange="startReportScan(this.files[0])">';
+    return;
+  }
+
+  if (_scanState === 'reading' || _scanState === 'analysing') {
+    var msg = _scanState === 'reading' ? t('scanProcessingPdf') : t('scanProcessingAi');
+    body.innerHTML =
+      '<div style="text-align:center;padding:48px 0;">' +
+        '<div class="scan-spinner"></div>' +
+        '<p style="margin-top:18px;font-size:14px;color:var(--ink2);">' + msg + '</p>' +
+      '</div>';
+    return;
+  }
+
+  if (_scanState === 'error') {
+    body.innerHTML =
+      '<div style="background:var(--red-soft);border:1px solid var(--red);border-radius:var(--r);padding:14px 16px;font-size:13.5px;color:var(--red);margin-bottom:16px;line-height:1.55;">' +
+        '<i class="ti ti-alert-circle" style="font-size:16px;margin-right:6px;vertical-align:-2px;"></i>' +
+        ((_scanData && _scanData.error) || '') +
+      '</div>' +
+      '<button class="btn-secondary" onclick="_scanState=\'idle\';renderScanModal();" style="width:100%;">' +
+        '<i class="ti ti-arrow-left"></i> ' + t('scanRetry') + '</button>';
+    return;
+  }
+
+  if (_scanState === 'results') {
+    var findings = (_scanData && _scanData.findings) || [];
+    if (!findings.length) {
+      body.innerHTML =
+        '<div style="text-align:center;padding:36px 0;color:var(--ink3);">' +
+          '<i class="ti ti-mood-happy" style="font-size:40px;display:block;margin-bottom:10px;color:var(--green);"></i>' +
+          '<p style="font-size:14px;">' + t('scanNone') + '</p>' +
+        '</div>' +
+        '<button class="btn-secondary" onclick="closeScanModal()" style="width:100%;">' + t('projCancel') + '</button>';
+      return;
+    }
+    findings.sort(function(a, b) { return b.tg - a.tg; });
+    if (!_scanSelected) _scanSelected = new Set(findings.map(function(_, i) { return i; }));
+
+    var items = findings.map(function(f, i) {
+      var checked = _scanSelected.has(i);
+      return '<label class="scan-result-item' + (checked ? '' : ' unchecked') + '" onclick="scanToggle(' + i + ')">' +
+        '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onclick="event.stopPropagation();scanToggle(' + i + ')" style="width:16px;height:16px;flex-shrink:0;margin-top:2px;">' +
+        '<span class="scan-tg-badge ' + (f.tg === 3 ? 'tg3' : 'tg2') + '">TG ' + f.tg + '</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13.5px;font-weight:500;color:var(--ink);line-height:1.35;">' + (f.tittel || '') + '</div>' +
+          '<div style="font-size:11.5px;color:var(--ink3);margin-top:2px;">' + (f.beskrivelse || '') + '</div>' +
+        '</div>' +
+      '</label>';
+    }).join('');
+
+    var n = _scanSelected.size;
+    body.innerHTML =
+      '<div style="font-size:12px;color:var(--ink3);margin-bottom:10px;">' +
+        findings.length + ' ' + t('scanFoundItems') +
+        ' &nbsp;·&nbsp; <span style="color:var(--ink2);font-weight:500;">' + n + ' ' + t('scanSelected') + '</span>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">' + items + '</div>' +
+      '<button class="btn-primary" style="width:100%;' + (n === 0 ? 'opacity:.4;pointer-events:none;' : '') + '" onclick="importScanFindings()">' +
+        '<i class="ti ti-hammer"></i> ' + t('scanImport').replace('{n}', n) +
+      '</button>';
+    return;
+  }
+
+  if (_scanState === 'done') {
+    var count = (_scanData && _scanData.count) || 0;
+    body.innerHTML =
+      '<div style="text-align:center;padding:36px 0;">' +
+        '<i class="ti ti-circle-check" style="font-size:44px;color:var(--green);display:block;margin-bottom:12px;"></i>' +
+        '<p style="font-size:15px;font-weight:500;color:var(--ink);">' + t('scanDone').replace('{n}', count) + '</p>' +
+      '</div>' +
+      '<button class="btn-primary" onclick="closeScanModal();navigate(\'renovering\')" style="width:100%;">' +
+        '<i class="ti ti-hammer"></i> ' + t('projects') + '</button>';
+  }
+}
+
+function scanToggle(idx) {
+  if (!_scanSelected) return;
+  if (_scanSelected.has(idx)) _scanSelected.delete(idx); else _scanSelected.add(idx);
+  renderScanModal();
+}
+
+async function startReportScan(file) {
+  if (!file) return;
+  _scanState = 'reading'; renderScanModal();
+  var text;
+  try   { text = await extractPdfText(file); }
+  catch { _scanState = 'error'; _scanData = { error: t('scanErrPdf') }; renderScanModal(); return; }
+
+  _scanState = 'analysing'; renderScanModal();
+  try {
+    var findings = await callClaudeForReport(text);
+    _scanState = 'results'; _scanData = { findings: findings }; _scanSelected = null;
+  } catch(err) {
+    _scanState = 'error';
+    if (err.code === 'no_key') _scanData = { error: t('scanErrNoKey') };
+    else if (err.code === 'api') _scanData = { error: t('scanErrApi') + (err.status ? ' (HTTP ' + err.status + ')' : '') };
+    else _scanData = { error: t('scanErrParse') };
+  }
+  renderScanModal();
+}
+
+function importScanFindings() {
+  var findings = _scanData && _scanData.findings;
+  if (!findings || !_scanSelected || !_scanSelected.size) return;
+  var TG_COLOR  = { 2:'#C96A00', 3:'#C0392B' };
+  var TG_STATUS = { 2:'planned', 3:'active'  };
+  var ROM_CAT   = { bad:'bad', kjokken:'kjokken', utvendig:'utvendig', loft:'loft', stue:'stue', soverom:'soverom', annet:'annet' };
+  var count = 0;
+  findings.forEach(function(f, i) {
+    if (!_scanSelected.has(i)) return;
+    createProject({
+      name:       f.tittel || t('projDefaultName'),
+      category:   ROM_CAT[f.rom] || 'annet',
+      status:     TG_STATUS[f.tg] || 'planned',
+      color:      TG_COLOR[f.tg]  || PROJ_COLORS[0],
+      desc:       'TG ' + f.tg + ' – ' + (f.beskrivelse || ''),
+      budget:'', contractor:'', deadline:'',
+    });
+    count++;
+  });
+  _scanState = 'done'; _scanData = { count: count };
+  renderScanModal(); updateRenoveringDot();
+}
 
 /* ════════════════════════════════════════
    PROJECT IMAGE STORAGE  (IndexedDB)
@@ -6500,8 +6883,9 @@ function closeImgViewer() {
 
 (function boot() {
   const saved = loadSettings();
-  if (saved.haUrl)   APP.haUrl   = saved.haUrl;
-  if (saved.haToken) APP.haToken = saved.haToken;
+  if (saved.haUrl)        APP.haUrl        = saved.haUrl;
+  if (saved.haToken)      APP.haToken      = saved.haToken;
+  if (saved.claudeApiKey) APP.claudeApiKey = saved.claudeApiKey;
 
   // Restore theme
   const savedTheme = saved.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
