@@ -2168,7 +2168,7 @@ input, select { font-family: var(--sans); }
   <header class="topbar">
     <div class="topbar-title">
       <i class="ti ti-home"></i>
-      Boligvedlikehold
+      <span id="topbar-app-name">Boligvedlikehold</span>
       <span class="version-chip">v0.0.011.a</span>
     </div>
     <div class="topbar-right">
@@ -2358,9 +2358,41 @@ function fmtICS(d) {
 /* ════════════════════════════════════════
    LINK HELPERS
 ════════════════════════════════════════ */
-const gUrl  = q => 'https://www.google.com/search?q=' + encodeURIComponent(q + ' Norge');
-const maUrl = q => 'https://www.mittanbud.no/finn-fagfolk?q=' + encodeURIComponent(q);
-const ytUrl = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+/* ── Contractor search: one platform per country ── */
+var CONTRACTOR_SERVICES = {
+  NO: { name:'MittAnbud',     url:'https://www.mittanbud.no/finn-fagfolk?q=' },
+  SE: { name:'Hittaproffs',   url:'https://www.hittaproffs.se/s/?q=' },
+  DK: { name:'Håndværker.dk', url:'https://www.haandvaerker.dk/find-haandvaerker?q=' },
+  FI: { name:'Etsi ammattilainen', url:'https://www.google.fi/search?q=' },
+  DE: { name:'MyHammer',      url:'https://www.myhammer.de/handwerker-suchen/?q=' },
+  NL: { name:'Werkspot',      url:'https://www.werkspot.nl/zoek?q=' },
+  GB: { name:'Checkatrade',   url:'https://www.checkatrade.com/search/?search=' },
+};
+function getContractorService() {
+  var country = (APP.locale && APP.locale.country) || 'NO';
+  return CONTRACTOR_SERVICES[country] || CONTRACTOR_SERVICES.GB;
+}
+function maUrl(q) {
+  var svc = getContractorService();
+  return svc.url + encodeURIComponent(q);
+}
+
+/* ── Google: locale-aware ── */
+function gUrl(q) {
+  var lang    = (APP.locale && APP.locale.lang)    || 'no';
+  var country = (APP.locale && APP.locale.country) || 'NO';
+  var hlMap   = { no:'nb', sv:'sv', da:'da', fi:'fi', en:'en', de:'de', nl:'nl' };
+  var hl = hlMap[lang] || 'en';
+  return 'https://www.google.com/search?hl=' + hl + '&gl=' + country.toLowerCase() + '&q=' + encodeURIComponent(q);
+}
+
+/* ── YouTube: locale-aware ── */
+function ytUrl(q) {
+  var lang  = (APP.locale && APP.locale.lang) || 'no';
+  var hlMap = { no:'nb', sv:'sv', da:'da', fi:'fi', en:'en', de:'de', nl:'nl' };
+  var hl = hlMap[lang] || 'en';
+  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q) + '&hl=' + hl;
+}
 
 /* ════════════════════════════════════════
    MASTER DATA
@@ -2991,14 +3023,21 @@ function renderTaskCard(task) {
   var nextLabel = '<span style="font-size:11px;color:var(--ink3);display:inline-flex;align-items:center;gap:3px;">' +
     '<i class="ti ti-refresh" style="font-size:12px;"></i>' + s('repeats') + ' ' + repeatText + '</span>';
 
+  /* For non-Norwegian use the translated task title as search query */
+  var isNorwegian = lang === 'no';
+  var maQuery = isNorwegian && task.fagfolk && task.fagfolk.ma ? task.fagfolk.ma : task.title;
+  var gQuery  = isNorwegian && task.fagfolk && task.fagfolk.g  ? task.fagfolk.g  : task.title;
+  var ytQuery = isNorwegian && task.yt ? task.yt : task.title;
+  var contractorSvc = getContractorService();
+
   var fagfolkBtns = task.fagfolk
     ? '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);">' + s('fagfolk') + ':</span>' +
-      '<a href="' + maUrl(task.fagfolk.ma) + '" target="_blank" class="act-btn act-ma" onclick="event.stopPropagation()"><i class="ti ti-tools"></i>MittAnbud</a>' +
-      '<a href="' + gUrl(task.fagfolk.g) + '" target="_blank" class="act-btn act-g" onclick="event.stopPropagation()"><i class="ti ti-search"></i>Google</a>' +
+      '<a href="' + maUrl(maQuery) + '" target="_blank" class="act-btn act-ma" onclick="event.stopPropagation()"><i class="ti ti-tools"></i>' + contractorSvc.name + '</a>' +
+      '<a href="' + gUrl(gQuery) + '" target="_blank" class="act-btn act-g" onclick="event.stopPropagation()"><i class="ti ti-search"></i>Google</a>' +
       '<div class="divider"></div>'
     : '';
   var ytBtn = task.yt
-    ? '<a href="' + ytUrl(task.yt) + '" target="_blank" class="act-btn act-yt" onclick="event.stopPropagation()"><i class="ti ti-brand-youtube"></i>' + s('guide') + '</a><div class="divider"></div>'
+    ? '<a href="' + ytUrl(ytQuery) + '" target="_blank" class="act-btn act-yt" onclick="event.stopPropagation()"><i class="ti ti-brand-youtube"></i>' + s('guide') + '</a><div class="divider"></div>'
     : '';
   var haBtn = '<button class="act-btn act-ha" onclick="event.stopPropagation();haAction(' + task.id + ')"><i class="ti ti-smart-home"></i>' + s('sendHA') + '</button>';
   var angreBtn = task.lastDone
@@ -3039,7 +3078,7 @@ function renderTaskCard(task) {
     '<div class="task-detail' + (isOpen?' open':'') + '" id="detail-' + task.id + '">' +
       (task.desc ? '<p class="detail-desc">' + task.desc + '</p>' : '') +
       stepsHtml +
-      '<div class="action-bar">' + fagfolkBtns + ytBtn + haBtn + angreBtn + (assignChip ? '<div class="divider"></div>' + assignChip : '') + '</div>' +
+      '<div class="action-bar">' + fagfolkBtns + ytBtn + haBtn + angreBtn + (assignChip ? '<div class="divider"></div>' + assignChip : '') + '<div class="divider"></div><button class="act-btn" style="color:var(--purple);" onclick="event.stopPropagation();openProjModalFromTask(' + task.id + ',\'' + task.title.replace(/'/g,"\\'") + '\',\'' + task.cat + '\')"><i class="ti ti-hammer"></i> ' + t('projAddTask') + '</button>' + '</div>' +
     '</div>' +
   '</div>';
 }
@@ -3632,6 +3671,8 @@ const LANGUAGES = [
 
 const STRINGS = {
   no: {
+    appName:'Boligvedlikehold', appDesc:'Hold oversikt over alt vedlikehold i hjemmet ditt',
+    projAddTask:'Legg til som prosjekt',
     home:'Hjem', laws:'Lover', settings:'Innstillinger',
     overdue:'Forfalt', done:'Fullført', within2w:'Innen 2 uker',
     allTasks:'Alle', fagfolk:'Fagfolk',
@@ -3691,6 +3732,8 @@ const STRINGS = {
     shareFillFields:'Fyll inn nøkkel og navn.',
   },
   sv: {
+    appName:'Bostadsunderhåll', appDesc:'Håll koll på allt underhåll i ditt hem',
+    projAddTask:'Lägg till som projekt',
     home:'Hem', laws:'Lagar', settings:'Inställningar',
     overdue:'Försenat', done:'Klart', within2w:'Inom 2 veckor',
     allTasks:'Alla', fagfolk:'Hantverkare',
@@ -3749,6 +3792,8 @@ const STRINGS = {
     shareFillFields:'Fyll i nyckel och namn.',
   },
   da: {
+    appName:'Boligvedligehold', appDesc:'Hold overblik over al vedligeholdelse i dit hjem',
+    projAddTask:'Tilføj som projekt',
     home:'Hjem', laws:'Love', settings:'Indstillinger',
     overdue:'Forfalden', done:'Færdig', within2w:'Inden for 2 uger',
     allTasks:'Alle', fagfolk:'Fagfolk',
@@ -3807,6 +3852,8 @@ const STRINGS = {
     shareFillFields:'Udfyld nøgle og navn.',
   },
   en: {
+    appName:'Home Maintenance', appDesc:'Track all maintenance in your home',
+    projAddTask:'Add as project',
     home:'Home', laws:'Laws', settings:'Settings',
     overdue:'Overdue', done:'Done', within2w:'Within 2 weeks',
     allTasks:'All', fagfolk:'Tradesmen',
@@ -3865,6 +3912,8 @@ const STRINGS = {
     shareFillFields:'Please fill in key and name.',
   },
   de: {
+    appName:'Hauswartung', appDesc:'Behalten Sie alle Wartungsarbeiten in Ihrem Zuhause im Blick',
+    projAddTask:'Als Projekt hinzufügen',
     home:'Start', laws:'Gesetze', settings:'Einstellungen',
     overdue:'Überfällig', done:'Erledigt', within2w:'Innerhalb 2 Wochen',
     allTasks:'Alle', fagfolk:'Fachleute',
@@ -3923,6 +3972,8 @@ const STRINGS = {
     shareFillFields:'Bitte Schlüssel und Name eingeben.',
   },
   nl: {
+    appName:'Woningonderhoud', appDesc:'Houd alle onderhoudswerkzaamheden in uw woning bij',
+    projAddTask:'Toevoegen als project',
     home:'Home', laws:'Wetten', settings:'Instellingen',
     overdue:'Achterstallig', done:'Klaar', within2w:'Binnen 2 weken',
     allTasks:'Alle', fagfolk:'Vakman',
@@ -4004,9 +4055,16 @@ function updateNavLabels() {
   var tabJur  = document.getElementById('tab-juridisk');
   var tabSet  = document.getElementById('tab-innstillinger');
   if (tabHjem) tabHjem.querySelector('span').textContent = t('home');
-  if (tabRen)  tabRen.querySelector('span').textContent  = t('projects') || 'Prosjekter';
+  if (tabRen)  tabRen.querySelector('span').textContent  = t('projects');
   if (tabJur)  tabJur.querySelector('span').textContent  = t('laws');
   if (tabSet)  tabSet.querySelector('span').textContent  = t('settings');
+  var nameEl = document.getElementById('topbar-app-name');
+  if (nameEl) nameEl.textContent = t('appName');
+  document.title = t('appName');
+  var metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', t('appDesc'));
+  var metaApple = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  if (metaApple) metaApple.setAttribute('content', t('appName'));
 }
 
 /* ════════════════════════════════════════
@@ -5792,6 +5850,30 @@ function openProjModal(editId) {
 function closeProjModal() {
   var overlay = document.getElementById('proj-modal-overlay');
   if (overlay) overlay.style.display = 'none';
+}
+
+/* Map task category → project category */
+var TASK_TO_PROJ_CAT = {
+  utvendig: 'utvendig', uteareal: 'utvendig',
+  hage: 'hage', frukt: 'hage',
+  ror: 'annet', sikkerhet: 'annet', sesong: 'annet',
+  apparater: 'annet', hvitevarer: 'annet',
+  fellesareal: 'annet', redskaper: 'annet', hytte: 'annet',
+};
+
+function openProjModalFromTask(taskId, title, cat) {
+  _pmFields = {
+    name:       title,
+    category:   TASK_TO_PROJ_CAT[cat] || 'annet',
+    status:     'planned',
+    color:      PROJ_COLORS[0],
+    desc:       '',
+    budget:     '',
+    contractor: '',
+    deadline:   '',
+  };
+  _projEditId = null;
+  openProjModal();
 }
 
 var _pmFields = { name:'', category:'annet', status:'planned', color: PROJ_COLORS[0], desc:'', budget:'', contractor:'', deadline:'' };
