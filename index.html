@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="description" content="Boligvedlikehold – hold oversikt over alt vedlikehold i hjemmet ditt"/>
 <meta name="theme-color" content="#1C1A14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Boligvedlikehold"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <title>Boligvedlikehold</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -105,18 +109,35 @@
    RESET & BASE
 ══════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; }
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+}
 body {
   font-family: var(--sans);
   font-size: 15px;
   color: var(--ink);
   background: var(--paper);
   height: 100%;
+  height: -webkit-fill-available;
   overflow: hidden;
+  /* Prevent callout on long-press (iOS) */
+  -webkit-touch-callout: none;
 }
-a { color: inherit; text-decoration: none; }
-button { font-family: var(--sans); cursor: pointer; }
+a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button {
+  font-family: var(--sans);
+  cursor: pointer;
+  /* Remove tap flash on iOS */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
 input, select { font-family: var(--sans); }
+
+/* ── Prevent auto-zoom on input focus (iOS requires font-size ≥ 16px) ── */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px; }
+}
 
 /* ══════════════════════════════════════════
    APP SHELL
@@ -125,6 +146,7 @@ input, select { font-family: var(--sans); }
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: var(--app-height, 100vh); /* JS keeps this in sync with visualViewport */
   max-width: 640px;
   margin: 0 auto;
   position: relative;
@@ -240,6 +262,8 @@ input, select { font-family: var(--sans); }
   padding: 8px 0;
   position: relative;
   transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .nav-tab i { font-size: 22px; transition: color .15s; }
 .nav-tab.active { color: var(--ink); }
@@ -921,6 +945,7 @@ input, select { font-family: var(--sans); }
   margin: 0 auto;
   padding: 0 0 100px;
   min-height: 100vh;
+  min-height: var(--app-height, 100vh);
   display: flex;
   flex-direction: column;
 }
@@ -6044,6 +6069,38 @@ function toggleTheme() {
 /* ════════════════════════════════════════
    BOOT
 ════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   IOS VIEWPORT & KEYBOARD
+════════════════════════════════════════ */
+(function setupIOS() {
+  /* Fix the 100vh bug: iOS Safari reports 100vh as the height WITHOUT the
+     browser chrome, so the app overflows. We track the real inner height and
+     expose it as --app-height so CSS can use it instead of 100vh. */
+  function syncAppHeight() {
+    document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+  }
+  syncAppHeight();
+  window.addEventListener('resize', syncAppHeight);
+
+  /* When the soft keyboard appears on iOS the visualViewport shrinks while
+     window.innerHeight stays the same. We use this to scroll the focused
+     input into view so it isn't hidden behind the keyboard. */
+  if (window.visualViewport) {
+    var lastKeyboardHeight = 0;
+    window.visualViewport.addEventListener('resize', function() {
+      var kbHeight = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+      var keyboardOpened = kbHeight > 100 && lastKeyboardHeight <= 100;
+      lastKeyboardHeight = kbHeight;
+      if (keyboardOpened) {
+        var el = document.activeElement;
+        if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) {
+          setTimeout(function() { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 80);
+        }
+      }
+    });
+  }
+})();
+
 (function boot() {
   const saved = loadSettings();
   if (saved.haUrl)   APP.haUrl   = saved.haUrl;
