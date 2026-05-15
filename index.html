@@ -6592,23 +6592,39 @@ function renderScanModal() {
   if (!body) return;
 
   if (_scanState === 'idle') {
-    if (!APP.claudeApiKey) {
-      body.innerHTML =
-        '<div style="background:var(--orange-soft);border:1px solid var(--orange);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.6;color:var(--orange);">' +
-          '<i class="ti ti-key" style="font-size:16px;margin-right:6px;vertical-align:-2px;"></i>' + t('scanNoKey') +
+    var apiSection = APP.claudeApiKey
+      /* Has key → show dropzone */
+      ? '<label class="scan-dropzone" for="scan-file-inp">' +
+          '<i class="ti ti-file-search" style="font-size:34px;"></i>' +
+          '<span style="font-size:13.5px;">' + t('scanDrop') + '</span>' +
+          '<span style="font-size:11px;color:var(--ink4);">PDF</span>' +
+        '</label>' +
+        '<input type="file" id="scan-file-inp" accept=".pdf,application/pdf" style="display:none" onchange="startReportScan(this.files[0])">'
+      /* No key → info + link to settings */
+      : '<div style="background:var(--blue-soft);border:1px solid #B8D0EC;border-radius:var(--r);padding:13px 15px;margin-bottom:12px;font-size:13px;line-height:1.6;color:var(--blue);">' +
+          '<i class="ti ti-info-circle" style="font-size:15px;margin-right:5px;vertical-align:-2px;"></i>' +
+          t('scanNoKey') +
         '</div>' +
-        '<button class="btn-primary" onclick="closeScanModal();navigate(\'innstillinger\')" style="width:100%;">' +
-          '<i class="ti ti-settings"></i> ' + t('settings') + '</button>';
-      return;
-    }
+        '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
+          '<button class="btn-secondary" style="flex:1;" onclick="closeScanModal();navigate(\'innstillinger\')">' +
+            '<i class="ti ti-settings"></i> ' + t('settings') +
+          '</button>' +
+          '<a href="https://console.anthropic.com/settings/keys" target="_blank" class="btn-secondary" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;">' +
+            '<i class="ti ti-external-link"></i> Hent API-nøkkel' +
+          '</a>' +
+        '</div>';
+
     body.innerHTML =
-      '<p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6;">' + t('scanDesc') + '</p>' +
-      '<label class="scan-dropzone" for="scan-file-inp">' +
-        '<i class="ti ti-file-search" style="font-size:34px;"></i>' +
-        '<span style="font-size:13.5px;">' + t('scanDrop') + '</span>' +
-        '<span style="font-size:11px;color:var(--ink4);">PDF</span>' +
-      '</label>' +
-      '<input type="file" id="scan-file-inp" accept=".pdf,application/pdf" style="display:none" onchange="startReportScan(this.files[0])">';
+      '<p style="font-size:13px;color:var(--ink3);margin-bottom:14px;line-height:1.6;">' + t('scanDesc') + '</p>' +
+      apiSection +
+      '<div style="display:flex;align-items:center;gap:10px;margin-top:14px;">' +
+        '<div style="flex:1;height:1px;background:var(--paper3);"></div>' +
+        '<span style="font-size:12px;color:var(--ink4);">eller</span>' +
+        '<div style="flex:1;height:1px;background:var(--paper3);"></div>' +
+      '</div>' +
+      '<button class="btn-secondary" style="width:100%;margin-top:12px;" onclick="loadScanDemo()">' +
+        '<i class="ti ti-test-pipe"></i> Prøv med eksempelrapport' +
+      '</button>';
     return;
   }
 
@@ -6682,6 +6698,20 @@ function renderScanModal() {
       '<button class="btn-primary" onclick="closeScanModal();navigate(\'renovering\')" style="width:100%;">' +
         '<i class="ti ti-hammer"></i> ' + t('projects') + '</button>';
   }
+}
+
+function loadScanDemo() {
+  _scanState = 'results';
+  _scanSelected = null;
+  _scanData = { findings: [
+    { tittel:'Drenering – setningsskader langs grunnmur',   tg:3, rom:'utvendig', beskrivelse:'Kritiske setningsskader. Vann observert langs grunnmur. Krever umiddelbar utbedring.' },
+    { tittel:'Tak – løse lekter og skadet takstein',        tg:3, rom:'utvendig', beskrivelse:'Tre løse takstein og manglende lekter på nordside. Risiko for vanninntrengning.' },
+    { tittel:'Bad – fuktskade i gulv under fliser',         tg:2, rom:'bad',      beskrivelse:'Fuktmåling viser fukt under fliser ved sluk. Membran trolig skadet.' },
+    { tittel:'Fasade – manglende overflatebehandling',      tg:2, rom:'utvendig', beskrivelse:'Sørfasade har avflasset maling og synlig råte i nedre del av vindusbelistning.' },
+    { tittel:'Kjøkken – ventilasjon uten avtrekk til det fri', tg:2, rom:'kjokken', beskrivelse:'Kjøkkenvifte ombygget til resirkulering. Tilfredsstiller ikke krav i TEK17.' },
+    { tittel:'Vinduer – kondens mellom glassene',           tg:2, rom:'annet',    beskrivelse:'Tre vinduer med kondensering mellom glasslagene. Isoleringsevne sterkt redusert.' },
+  ]};
+  renderScanModal();
 }
 
 function scanToggle(idx) {
