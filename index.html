@@ -4587,8 +4587,8 @@ const STRINGS = {
     projDefaultName:'Nytt projekt', projUpdatedToast:'Projekt uppdaterat.', projAddedToast:'tillagd!',
     projDeleteConfirm:'Ta bort «{name}»? Detta kan inte ångras.',
     projPhotos:'Bilder', projAddPhoto:'Lägg till',
-    scanReport:'Skanna rapport', scanTitle:'Besiktningsrapport',
-    scanDesc:'Ladda upp en besiktningsrapport eller säljrapport. Appen hittar TG2- och TG3-avvikelser och skapar projekt automatiskt.',
+    scanReport:'Skanna rapport', scanTitle:'Besiktningsprotokoll',
+    scanDesc:'Ladda upp ett besiktningsprotokoll (överlåtelsebesiktning). Appen hittar Anmärkningar och OBS-punkter och skapar projekt automatiskt.',
     scanNoKey:'Lägg till en Claude API-nyckel under Inställningar för att använda den här funktionen.',
     scanDrop:'Släpp PDF här, eller tryck för att välja',
     scanProcessingPdf:'Läser PDF…', scanProcessingAi:'Analyserar med {ai}…',
@@ -7341,17 +7341,68 @@ function buildReportPrompt(text) {
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
     .replace(/ {3,}/g, '  ')
     .slice(0, 45000);
-  return 'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
-    'Finn alle bygningsdeler med tilstandsgrad TG 2 eller TG 3 (ignorer TG 0, TG 1 og IU/TGI). ' +
-    'For hvert funn: ta med prisanslag hvis det er oppgitt i rapporten (f.eks. "kr 50 000–80 000" eller "ca. 120 000 kr"). ' +
-    'Svar UTELUKKENDE med en JSON-array – ingen markdown, ingen annen tekst:\n' +
-    '[\n  {\n' +
-    '    "tittel": "Bygningsdel – kort problembeskrivelse (maks 55 tegn)",\n' +
-    '    "tg": 2,\n' +
-    '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
-    '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)",\n' +
-    '    "pris": "Prisanslag fra rapporten, eller null hvis ikke oppgitt"\n' +
-    '  }\n]\n\nRAPPORT:\n' + clean;
+
+  var lang = (APP.locale && APP.locale.lang) || 'no';
+
+  var intro, schema;
+
+  if (lang === 'sv') {
+    intro =
+      'Du är expert på svenska besiktningsprotokoll (överlåtelsebesiktning, SBR/Anticimex). ' +
+      'Hitta alla byggdelar med brister som kräver åtgärd — sådant som märkts med ' +
+      '"Anmärkning", "OBS", "Risk", fukt, skada, konstruktionsbrister eller säkerhetsrisker. ' +
+      'Ignorera "Normalt slitage" och observanda utan åtgärd. ' +
+      'Klassificera: tg:2 = anmärkning/åtgärd rekommenderas, tg:3 = OBS/åtgärd krävs omedelbart. ' +
+      'Ta med prisuppskattning om den finns i rapporten (t.ex. "ca 50 000–80 000 kr"). ' +
+      'Svara ENBART med en JSON-array – ingen markdown, ingen annan text:\n';
+    schema =
+      '    "tittel": "Byggdel – kort problembeskrivning (max 55 tecken)",\n' +
+      '    "tg": 2,\n' +
+      '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
+      '    "beskrivelse": "Sammanfattning av bristen (max 130 tecken)",\n' +
+      '    "pris": "Prisuppskattning från rapporten, eller null"\n';
+  } else if (lang === 'da') {
+    intro =
+      'Du er ekspert i danske tilstandsrapporter (NS 3600-lignende). ' +
+      'Find alle bygningsdele med tilstandsgrad 2 eller 3 (ignorer grad 0, 1 og IU). ' +
+      'Medtag prisoverslag hvis det er angivet i rapporten. ' +
+      'Svar KUN med et JSON-array – ingen markdown, ingen anden tekst:\n';
+    schema =
+      '    "tittel": "Bygningsdel – kort problembeskrivelse (maks 55 tegn)",\n' +
+      '    "tg": 2,\n' +
+      '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
+      '    "beskrivelse": "Sammendrag af afvigelsen (maks 130 tegn)",\n' +
+      '    "pris": "Prisoverslag fra rapporten, eller null"\n';
+  } else if (lang === 'en') {
+    intro =
+      'You are an expert in building condition reports. ' +
+      'Find all building elements with defects classified as grade 2 (moderate – action recommended) ' +
+      'or grade 3 (serious – immediate action required). Ignore grade 0 and 1. ' +
+      'Include cost estimates if stated in the report. ' +
+      'Reply ONLY with a JSON array – no markdown, no other text:\n';
+    schema =
+      '    "tittel": "Building element – short problem description (max 55 chars)",\n' +
+      '    "tg": 2,\n' +
+      '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
+      '    "beskrivelse": "Summary of the defect (max 130 chars)",\n' +
+      '    "pris": "Cost estimate from the report, or null"\n';
+  } else {
+    /* Default: Norwegian NS 3600 */
+    intro =
+      'Du er ekspert på norske tilstandsrapporter (NS 3600). ' +
+      'Finn alle bygningsdeler med tilstandsgrad TG 2 eller TG 3 (ignorer TG 0, TG 1 og IU/TGI). ' +
+      'For hvert funn: ta med prisanslag hvis det er oppgitt i rapporten (f.eks. "kr 50 000–80 000"). ' +
+      'Svar UTELUKKENDE med en JSON-array – ingen markdown, ingen annen tekst:\n';
+    schema =
+      '    "tittel": "Bygningsdel – kort problembeskrivelse (maks 55 tegn)",\n' +
+      '    "tg": 2,\n' +
+      '    "rom": "utvendig|bad|kjokken|loft|stue|soverom|annet",\n' +
+      '    "beskrivelse": "Sammendrag av avviket (maks 130 tegn)",\n' +
+      '    "pris": "Prisanslag fra rapporten, eller null hvis ikke oppgitt"\n';
+  }
+
+  return intro +
+    '[\n  {\n' + schema + '  }\n]\n\nRAPPORT:\n' + clean;
 }
 
 function parseJsonFromModel(raw) {
@@ -7587,7 +7638,7 @@ function renderScanModal() {
       var checked = _scanSelected.has(i);
       return '<label class="scan-result-item' + (checked ? '' : ' unchecked') + '" onclick="scanToggle(' + i + ')">' +
         '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onclick="event.stopPropagation();scanToggle(' + i + ')" style="width:16px;height:16px;flex-shrink:0;margin-top:2px;">' +
-        '<span class="scan-tg-badge ' + (f.tg === 3 ? 'tg3' : 'tg2') + '">TG ' + f.tg + '</span>' +
+        '<span class="scan-tg-badge ' + (f.tg === 3 ? 'tg3' : 'tg2') + '">' + getScanGradeLabel(f.tg) + '</span>' +
         '<div style="flex:1;min-width:0;">' +
           '<div style="font-size:13.5px;font-weight:500;color:var(--ink);line-height:1.35;">' + (f.tittel || '') + '</div>' +
           '<div style="font-size:11.5px;color:var(--ink3);margin-top:2px;">' + (f.beskrivelse || '') + '</div>' +
@@ -7619,6 +7670,16 @@ function renderScanModal() {
       '<button class="btn-primary" onclick="closeScanModal();navigate(\'renovering\')" style="width:100%;">' +
         '<i class="ti ti-hammer"></i> ' + t('projects') + '</button>';
   }
+}
+
+function getScanGradeLabel(tg) {
+  var lang = (APP.locale && APP.locale.lang) || 'no';
+  if (lang === 'sv') return tg === 3 ? 'OBS!' : 'Anmärkning';
+  if (lang === 'da') return 'Grad ' + tg;
+  if (lang === 'en') return 'Grade ' + tg;
+  if (lang === 'de') return 'Grad ' + tg;
+  if (lang === 'nl') return 'Graad ' + tg;
+  return 'TG ' + tg; /* no (default) */
 }
 
 function loadScanDemo() {
