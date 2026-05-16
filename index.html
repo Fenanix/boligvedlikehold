@@ -5061,6 +5061,7 @@ const SURVEY_STEPS = [
     question: 'Vil du ha påminnelse om disse oppgavene?',
     hint: 'Valgfritt – velg det som passer deg. Du kan endre det i innstillinger når som helst.',
     options: [
+      { val: 'renhold',    icon: 'ti-shirt',            label: 'Renhold & Hygiene',        sub: 'Bytte sengetøy, håndklær, vask dusjforheng og mer' },
       { val: 'stoppekran', icon: 'ti-droplet',         label: 'Vann & sikkerhet',         sub: 'Test stoppekran og trykkventil 1–2 × i året' },
       { val: 'legionella', icon: 'ti-refresh',          label: 'Legionella-forebygging',   sub: 'Spyl sjelden-brukte kraner månedlig' },
       { val: 'inneklima',  icon: 'ti-air-conditioning', label: 'Ventilasjon & inneklima',  sub: 'Rens baderomsvifte hvert kvartal' },
@@ -5461,6 +5462,7 @@ function computeTasksForProfile(profile) {
     if (t.id === 34  && !features.includes('garasje'))            return false;
 
     // Ekstra opt-in oppgaver
+    if (t.cat === 'renhold'  && !features.includes('renhold'))     return false;
     if (t.id === 111 && !features.includes('stoppekran'))          return false;
     if (t.id === 112 && !features.includes('stoppekran'))          return false;
     if (t.id === 113 && !features.includes('legionella'))          return false;
