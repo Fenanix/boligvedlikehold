@@ -8260,38 +8260,39 @@ function openDocViewer(id) {
   updateNavLabels();
 
   function bootPhase2() {
-    // Load addresses
-    APP.addresses = loadAddresses();
-
-    const profile = loadProfile();
-
-    // Migrate old profile → address
-    if (profile && APP.addresses.length === 0) {
-      var migratedAddr = addAddress(profile.name || 'Hjemme', profile.boligtype || 'enebolig', profile);
+    try {
       APP.addresses = loadAddresses();
-      try { localStorage.setItem('bv_active_addr', migratedAddr.id); } catch {}
-    }
+      const profile = loadProfile();
 
-    // Restore active address
-    var lastActive = null;
-    try { lastActive = localStorage.getItem('bv_active_addr'); } catch {}
-    if (APP.addresses.length > 0) {
-      var toActivate = APP.addresses.find(function(a) { return a.id === lastActive; }) || APP.addresses[0];
-      switchAddress(toActivate.id);
-      navigate('hjem');
-      updateNavLabels();
-      updateRenoveringDot();
-      loadWeatherForCurrentAddr();
-      setTimeout(maybeNotifyOverdue, 2000);
-      if (getSyncMeta()) {
-        setTimeout(function() { pullFromCloud(); }, 1000);
-        setInterval(function() { if (getSyncMeta()) pullFromCloud(); }, 60000);
+      if (profile && APP.addresses.length === 0) {
+        var migratedAddr = addAddress(profile.name || 'Hjemme', profile.boligtype || 'enebolig', profile);
+        APP.addresses = loadAddresses();
+        try { localStorage.setItem('bv_active_addr', migratedAddr.id); } catch {}
       }
-    } else {
-      setType(saved.boligtype || 'leilighet');
-      navigate('hjem');
-      updateNavLabels();
-      if (!profile) openSurvey();
+
+      var lastActive = null;
+      try { lastActive = localStorage.getItem('bv_active_addr'); } catch {}
+      if (APP.addresses.length > 0) {
+        var toActivate = APP.addresses.find(function(a) { return a.id === lastActive; }) || APP.addresses[0];
+        switchAddress(toActivate.id);
+        navigate('hjem');
+        updateNavLabels();
+        updateRenoveringDot();
+        loadWeatherForCurrentAddr();
+        setTimeout(maybeNotifyOverdue, 2000);
+        if (getSyncMeta()) {
+          setTimeout(function() { pullFromCloud(); }, 1000);
+          setInterval(function() { if (getSyncMeta()) pullFromCloud(); }, 60000);
+        }
+      } else {
+        setType(saved.boligtype || 'leilighet');
+        navigate('hjem');
+        updateNavLabels();
+        if (!profile) openSurvey();
+      }
+    } catch(err) {
+      console.error('bootPhase2 error:', err);
+      _showGlobalError('bootPhase2: ' + err.message + '\n' + (err.stack || ''));
     }
   }
 
