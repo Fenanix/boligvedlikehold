@@ -3339,15 +3339,21 @@ function renderHjem() {
         '<div class="stat-card"><div class="stat-num green">' + done + '</div><div class="stat-lbl">' + t('done') + '</div></div>' +
       '</div>' +
       (infoText ? '<div class="info-banner"><i class="ti ti-info-circle"></i><span>' + infoText + '</span></div>' : '') +
-      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">' +
-        '<div class="filter-bar" style="flex:1;margin:0;">' + filterBtns + '</div>' +
-        (function() {
-          var m = SORT_MODES.find(function(x) { return x.key === _taskSort; });
-          return '<button onclick="cycleTaskSort()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;border:1px solid var(--paper3);background:' + (_taskSort !== 'default' ? 'var(--ink);color:var(--warm-white)' : 'var(--warm-white);color:var(--ink2)') + ';font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Bytt sortering">' +
-            '<i class="ti ' + m.icon + '" style="font-size:12px;"></i> ' + m.label +
-          '</button>';
-        })() +
-      '</div>' +
+      '<div class="filter-bar">' + filterBtns + '</div>' +
+      (function() {
+        var m = SORT_MODES.find(function(x) { return x.key === _taskSort; });
+        var isDefault = _taskSort === 'default';
+        return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding:6px 10px;background:var(--paper2);border-radius:var(--r);border:1px solid var(--paper3);">' +
+          '<i class="ti ti-arrows-sort" style="font-size:14px;color:var(--ink3);flex-shrink:0;"></i>' +
+          '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);flex-shrink:0;">Sorter:</span>' +
+          SORT_MODES.map(function(s) {
+            var active = _taskSort === s.key;
+            return '<button onclick="cycleTaskSort()" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1px solid ' + (active ? 'var(--ink)' : 'transparent') + ';background:' + (active ? 'var(--ink)' : 'transparent') + ';color:' + (active ? 'var(--warm-white)' : 'var(--ink3)') + ';font-size:11.5px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;white-space:nowrap;">' +
+              '<i class="ti ' + s.icon + '" style="font-size:12px;"></i> ' + s.label +
+            '</button>';
+          }).join('') +
+        '</div>';
+      })() +
       '<div class="task-list">' + taskCards + '</div>' +
     '</div>';
 }
