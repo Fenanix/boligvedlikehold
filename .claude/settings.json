@@ -1,17 +1,1 @@
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "shell": "powershell",
-            "command": "$in = [Console]::In.ReadToEnd() | ConvertFrom-Json; if ($in.tool_input.command -match 'push origin master') { Write-Output '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"VERSION REMINDER: Remember to bump the version number in index.html. Search for the current version (e.g. 0.2.0) and update APP.version, the version-chip span, the Om appen row, and the ICS PRODID string.\"}}' } else { exit 0 }",
-            "statusMessage": "Sjekker versjonsnummer…"
-          }
-        ]
-      }
-    ]
-  }
-}
+{}
