@@ -107,9 +107,11 @@
 
 /* Theme toggle button */
 .theme-btn {
-  width: 34px;
+  min-width: 34px;
   height: 34px;
-  border-radius: var(--r-sm);
+  padding: 0 10px;
+  gap: 5px;
+  border-radius: 20px;
   border: 1px solid var(--paper3);
   background: var(--paper2);
   display: flex;
@@ -2338,6 +2340,7 @@ input, select { font-family: var(--sans); }
       <div class="ha-indicator" id="ha-dot" title="Home Assistant status"></div>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Bytt mellom lyst og mørkt tema">
         <i class="ti ti-moon" id="theme-icon"></i>
+        <span id="theme-label" style="font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--ink3);"></span>
       </button>
     </div>
   </header>
@@ -3657,17 +3660,21 @@ function renderInnstillinger() {
             <div class="setting-row-label">${APP.theme === 'dark' ? 'Mørkt tema' : 'Lyst tema'}</div>
             <div class="setting-row-sub">${APP.theme === 'dark' ? 'Bytt til lyst tema' : 'Bytt til mørkt tema'}</div>
           </div>
-          <button onclick="toggleTheme();renderInnstillinger();" style="
-            width:52px;height:28px;border-radius:28px;border:none;cursor:pointer;
-            position:relative;transition:background .2s;flex-shrink:0;
-            background:${APP.theme === 'dark' ? 'var(--ink)' : 'var(--paper4)'};
-          ">
-            <span style="
-              position:absolute;top:4px;width:20px;height:20px;border-radius:50%;
-              background:white;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
-              left:${APP.theme === 'dark' ? '28px' : '4px'};
-            "></span>
-          </button>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:16px;opacity:${APP.theme === 'dark' ? '0.35' : '1'};">☀️</span>
+            <button onclick="toggleTheme();renderInnstillinger();" style="
+              width:52px;height:28px;border-radius:28px;border:none;cursor:pointer;
+              position:relative;transition:background .2s;flex-shrink:0;
+              background:${APP.theme === 'dark' ? 'var(--ink)' : 'var(--paper4)'};
+            ">
+              <span style="
+                position:absolute;top:4px;width:20px;height:20px;border-radius:50%;
+                background:white;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
+                left:${APP.theme === 'dark' ? '28px' : '4px'};
+              "></span>
+            </button>
+            <span style="font-size:16px;opacity:${APP.theme === 'dark' ? '1' : '0.35'};">🌙</span>
+          </div>
         </div>
       </div>
     </div>
@@ -7110,10 +7117,10 @@ function renderProjectCard(proj) {
 function applyTheme(theme) {
   APP.theme = theme;
   document.documentElement.setAttribute('data-theme', theme);
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
-  }
+  const icon  = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if (icon)  icon.className    = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+  if (label) label.textContent = theme === 'dark' ? 'Lyst' : 'Mørkt';
   saveAppSettings();
 }
 
