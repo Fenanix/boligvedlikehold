@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Dark rounded background -->
+  <rect width="512" height="512" rx="88" fill="#1C1A14"/>
+
+  <!-- Chimney -->
+  <rect x="300" y="108" width="46" height="80" rx="6" fill="#F5F3ED"/>
+
+  <!-- Roof -->
+  <polygon points="256,78 96,248 416,248" fill="#F5F3ED"/>
+
+  <!-- Walls -->
+  <rect x="128" y="236" width="256" height="214" rx="6" fill="#F5F3ED"/>
+
+  <!-- Left window (orange) -->
+  <rect x="148" y="270" width="72" height="68" rx="10" fill="#C96A00"/>
+
+  <!-- Right window (orange) -->
+  <rect x="292" y="270" width="72" height="68" rx="10" fill="#C96A00"/>
+
+  <!-- Door -->
+  <rect x="204" y="314" width="104" height="136" rx="12" fill="#1C1A14"/>
+
+  <!-- Door handle -->
+  <circle cx="298" cy="386" r="9" fill="#C96A00"/>
+</svg>

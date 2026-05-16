@@ -1,0 +1,44 @@
+{
+  "name": "Boligvedlikehold",
+  "short_name": "Boligvedlikehold",
+  "description": "Hold oversikt over alt vedlikehold i hjemmet ditt. Track all home maintenance.",
+  "start_url": "/boligvedlikehold/",
+  "scope": "/boligvedlikehold/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1C1A14",
+  "background_color": "#1C1A14",
+  "lang": "nb",
+  "dir": "ltr",
+  "categories": ["utilities", "lifestyle", "productivity"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Oppgaveliste for boligvedlikehold"
+    }
+  ]
+}
