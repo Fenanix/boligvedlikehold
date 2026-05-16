@@ -1976,6 +1976,20 @@ input, select { font-family: var(--sans); }
 }
 .doc-add-btn:hover { border-color: var(--ink3); color: var(--ink2); }
 
+/* ── Language picker ── */
+.lang-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px; border-radius: var(--r-lg);
+  border: 2px solid var(--paper3); background: var(--warm-white);
+  cursor: pointer; text-align: left; transition: border-color .12s, background .12s;
+  width: 100%;
+}
+.lang-btn:hover   { border-color: var(--paper4); }
+.lang-btn.sel     { border-color: var(--ink); background: var(--ink); }
+.lang-btn .flag   { font-size: 26px; line-height: 1; flex-shrink: 0; }
+.lang-btn .native { font-size: 14px; font-weight: 600; color: var(--ink); }
+.lang-btn.sel .native { color: var(--warm-white); }
+
 /* ── Report scanner ── */
 .scan-dropzone {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -2330,6 +2344,21 @@ input, select { font-family: var(--sans); }
 </head>
 <body>
 
+<!-- LANGUAGE PICKER (first launch only) -->
+<div id="lang-picker-overlay" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:2000;overflow-y:auto;">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;">
+    <div style="max-width:420px;width:100%;">
+      <div style="text-align:center;margin-bottom:36px;">
+        <div style="font-size:48px;margin-bottom:18px;">🌍</div>
+        <h1 style="font-family:var(--serif);font-size:26px;font-weight:400;color:var(--ink);margin-bottom:8px;letter-spacing:-.02em;">Choose your language</h1>
+        <p style="font-size:13px;color:var(--ink3);">Velg språk · Välj språk · Vælg sprog</p>
+      </div>
+      <div id="lang-picker-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;"></div>
+      <button id="lang-continue-btn" class="btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:13px;" onclick="confirmLanguage()">Continue</button>
+    </div>
+  </div>
+</div>
+
 <div id="app">
   <!-- Top bar -->
   <header class="topbar">
@@ -2502,7 +2531,7 @@ const APP = {
   theme:        'light',
   addresses:    [],
   activeAddr:   null,
-  locale:       { lang: 'no', country: 'NO' },
+  locale:       { lang: 'en', country: 'GB' },
   claudeApiKey: '',
   geminiApiKey: '',
   aiProvider:   'auto', // 'auto' | 'claude' | 'gemini'
@@ -3960,6 +3989,55 @@ function maybeNotifyOverdue() {
       icon: 'https://fenanix.github.io/boligvedlikehold/icon-192.png',
     });
   } catch (_) {}
+}
+
+/* ════════════════════════════════════════
+   LANGUAGE PICKER  (first launch)
+════════════════════════════════════════ */
+var LANG_OPTIONS = [
+  { lang:'en', country:'GB', flag:'🇬🇧', native:'English',    cont:'Continue'  },
+  { lang:'no', country:'NO', flag:'🇳🇴', native:'Norsk',      cont:'Fortsett'  },
+  { lang:'sv', country:'SE', flag:'🇸🇪', native:'Svenska',    cont:'Fortsätt'  },
+  { lang:'da', country:'DK', flag:'🇩🇰', native:'Dansk',      cont:'Fortsæt'   },
+  { lang:'de', country:'DE', flag:'🇩🇪', native:'Deutsch',    cont:'Weiter'    },
+  { lang:'nl', country:'NL', flag:'🇳🇱', native:'Nederlands', cont:'Doorgaan'  },
+];
+var _pickedLang      = { lang:'en', country:'GB' };
+var _langPickerDone  = null;
+
+function openLangPicker(onDone) {
+  _pickedLang     = { lang:'en', country:'GB' };
+  _langPickerDone = onDone;
+  renderLangPicker();
+  document.getElementById('lang-picker-overlay').style.display = 'block';
+}
+
+function renderLangPicker() {
+  var grid = document.getElementById('lang-picker-grid');
+  if (!grid) return;
+  grid.innerHTML = LANG_OPTIONS.map(function(o) {
+    var sel = _pickedLang.lang === o.lang;
+    return '<button class="lang-btn' + (sel ? ' sel' : '') + '" onclick="pickLang(\'' + o.lang + '\',\'' + o.country + '\')">' +
+      '<span class="flag">' + o.flag + '</span>' +
+      '<span class="native">' + o.native + '</span>' +
+    '</button>';
+  }).join('');
+  var opt = LANG_OPTIONS.find(function(o) { return o.lang === _pickedLang.lang; });
+  var btn = document.getElementById('lang-continue-btn');
+  if (btn && opt) btn.textContent = opt.cont;
+}
+
+function pickLang(lang, country) {
+  _pickedLang = { lang: lang, country: country };
+  renderLangPicker();
+}
+
+function confirmLanguage() {
+  APP.locale = _pickedLang;
+  saveAppSettings();
+  updateNavLabels();
+  document.getElementById('lang-picker-overlay').style.display = 'none';
+  if (_langPickerDone) _langPickerDone();
 }
 
 function toggleEkstraFeature(key) {
@@ -7919,49 +7997,55 @@ function openDocViewer(id) {
   if (saved.geminiApiKey) APP.geminiApiKey = saved.geminiApiKey;
   if (saved.aiProvider)   APP.aiProvider   = saved.aiProvider;
 
-  // Restore theme
+  // Restore theme first so the picker looks right
   const savedTheme = saved.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   applyTheme(savedTheme);
 
-  // Restore locale
+  // Restore locale (or keep default English)
   if (saved.locale) APP.locale = saved.locale;
+  updateNavLabels();
 
-  // Load addresses
-  APP.addresses = loadAddresses();
-
-  const profile = loadProfile();
-
-  // If we have a profile but no addresses yet, migrate it as first address
-  if (profile && APP.addresses.length === 0) {
-    var migratedAddr = addAddress(profile.name || 'Hjemme', profile.boligtype || 'enebolig', profile);
+  function bootPhase2() {
+    // Load addresses
     APP.addresses = loadAddresses();
-    try { localStorage.setItem('bv_active_addr', migratedAddr.id); } catch {}
+
+    const profile = loadProfile();
+
+    // Migrate old profile → address
+    if (profile && APP.addresses.length === 0) {
+      var migratedAddr = addAddress(profile.name || 'Hjemme', profile.boligtype || 'enebolig', profile);
+      APP.addresses = loadAddresses();
+      try { localStorage.setItem('bv_active_addr', migratedAddr.id); } catch {}
+    }
+
+    // Restore active address
+    var lastActive = null;
+    try { lastActive = localStorage.getItem('bv_active_addr'); } catch {}
+    if (APP.addresses.length > 0) {
+      var toActivate = APP.addresses.find(function(a) { return a.id === lastActive; }) || APP.addresses[0];
+      switchAddress(toActivate.id);
+      navigate('hjem');
+      updateNavLabels();
+      updateRenoveringDot();
+      loadWeatherForCurrentAddr();
+      setTimeout(maybeNotifyOverdue, 2000);
+      if (getSyncMeta()) {
+        setTimeout(function() { pullFromCloud(); }, 1000);
+        setInterval(function() { if (getSyncMeta()) pullFromCloud(); }, 60000);
+      }
+    } else {
+      setType(saved.boligtype || 'leilighet');
+      navigate('hjem');
+      updateNavLabels();
+      if (!profile) openSurvey();
+    }
   }
 
-  // Restore active address
-  var lastActive = null;
-  try { lastActive = localStorage.getItem('bv_active_addr'); } catch {}
-  if (APP.addresses.length > 0) {
-    var toActivate = APP.addresses.find(function(a) { return a.id === lastActive; }) || APP.addresses[0];
-    switchAddress(toActivate.id);
-    navigate('hjem');
-    updateNavLabels();
-    updateRenoveringDot();
-    // Load weather for active address
-    loadWeatherForCurrentAddr();
-    // Notify about overdue tasks if permission granted
-    setTimeout(maybeNotifyOverdue, 2000);
-    // Pull from cloud if room is set up
-    if (getSyncMeta()) {
-      setTimeout(function() { pullFromCloud(); }, 1000);
-      // Auto-sync every 60s
-      setInterval(function() { if (getSyncMeta()) pullFromCloud(); }, 60000);
-    }
+  // First launch: no saved locale → show language picker
+  if (!saved.locale) {
+    openLangPicker(bootPhase2);
   } else {
-    setType(saved.boligtype || 'leilighet');
-    navigate('hjem');
-    updateNavLabels();
-    if (!profile) openSurvey();
+    bootPhase2();
   }
 })();
 </script>
