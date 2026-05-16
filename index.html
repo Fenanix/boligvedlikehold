@@ -2254,21 +2254,23 @@ input, select { font-family: var(--sans); }
   box-shadow: var(--shadow-sm);
 }
 .law-row {
-  display: grid;
-  grid-template-columns: 1fr 80px;
-  gap: 0;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--paper3);
 }
 .law-row:last-child { border-bottom: none; }
-.law-row-content {
-  padding: 12px 14px;
+.law-row-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
 }
 .law-row-task {
   font-size: 13px;
   font-weight: 500;
   color: var(--ink);
-  margin-bottom: 3px;
   line-height: 1.4;
+  flex: 1;
 }
 .law-row-note {
   font-size: 11.5px;
@@ -2280,22 +2282,16 @@ input, select { font-family: var(--sans); }
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.law-row-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 8px;
-  border-left: 1px solid var(--paper3);
-}
 .status-pill {
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 20px;
   text-align: center;
-  line-height: 1.3;
-  letter-spacing: .03em;
+  line-height: 1.4;
+  letter-spacing: .02em;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .sp-ok     { background: var(--green-soft);  color: #1C4D2C; }
 .sp-no     { background: var(--red-soft);    color: #7B1F1A; }
@@ -4147,11 +4143,11 @@ function renderJuridisk() {
     var rowsHtml = cat.rows.map(function(r) {
       var spClass = r.status === 'ok' ? 'sp-ok' : r.status === 'no' ? 'sp-no' : 'sp-cond';
       return '<div class="law-row">' +
-        '<div class="law-row-content">' +
+        '<div class="law-row-header">' +
           '<div class="law-row-task">' + r.task + '</div>' +
-          '<div class="law-row-note">' + r.note + '</div>' +
+          '<span class="status-pill ' + spClass + '">' + r.label + '</span>' +
         '</div>' +
-        '<div class="law-row-status"><span class="status-pill ' + spClass + '">' + r.label + '</span></div>' +
+        '<div class="law-row-note">' + r.note + '</div>' +
       '</div>';
     }).join('');
     return '<div class="law-category">' +
@@ -4218,11 +4214,11 @@ function renderJuridisk() {
       return rows.map(function(r) {
         var spClass = r.status === 'ok' ? 'sp-ok' : r.status === 'no' ? 'sp-no' : 'sp-cond';
         return '<div class="law-row">' +
-          '<div class="law-row-content">' +
+          '<div class="law-row-header">' +
             '<div class="law-row-task">' + r.task + '</div>' +
-            '<div class="law-row-note">' + r.note + '</div>' +
+            '<span class="status-pill ' + spClass + '">' + r.label + '</span>' +
           '</div>' +
-          '<div class="law-row-status"><span class="status-pill ' + spClass + '">' + r.label + '</span></div>' +
+          '<div class="law-row-note">' + r.note + '</div>' +
         '</div>';
       }).join('');
     }
