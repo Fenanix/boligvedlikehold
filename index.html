@@ -3672,7 +3672,6 @@ function renderInnstillinger() {
         <div class="setting-row">
           <div class="setting-row-left">
             <div class="setting-row-label">${t('country')}</div>
-            <div class="setting-row-sub">${(COUNTRIES.find(function(c){return c.code===(APP.locale&&APP.locale.country)||'NO';})||COUNTRIES[0]).flag} ${(COUNTRIES.find(function(c){return c.code===(APP.locale&&APP.locale.country)||'NO';})||COUNTRIES[0]).name}</div>
           </div>
           <select style="font-size:13px;padding:6px 10px;border-radius:var(--r-sm);border:1px solid var(--paper3);background:var(--paper2);color:var(--ink);" onchange="changeCountry(this.value)">
             ${COUNTRIES.map(function(c){ return '<option value="' + c.code + '"' + ((APP.locale&&APP.locale.country)===c.code?' selected':'') + '>' + c.flag + ' ' + c.name + '</option>'; }).join('')}
@@ -3681,7 +3680,6 @@ function renderInnstillinger() {
         <div class="setting-row" style="border-bottom:none;padding-bottom:0;">
           <div class="setting-row-left">
             <div class="setting-row-label">${t('language')}</div>
-            <div class="setting-row-sub">${(LANGUAGES.find(function(l){return l.code===(APP.locale&&APP.locale.lang)||'no';})||LANGUAGES[0]).name}</div>
           </div>
           <select style="font-size:13px;padding:6px 10px;border-radius:var(--r-sm);border:1px solid var(--paper3);background:var(--paper2);color:var(--ink);" onchange="changeLang(this.value)">
             ${LANGUAGES.map(function(l){ return '<option value="' + l.code + '"' + ((APP.locale&&APP.locale.lang)===l.code?' selected':'') + '>' + l.name + '</option>'; }).join('')}
