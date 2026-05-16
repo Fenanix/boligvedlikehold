@@ -20,6 +20,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css"/>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: '5bf17d43-e523-4b78-9539-5173a7fd943c',
+      serviceWorkerPath: 'OneSignalSDKWorker.js',
+      serviceWorkerParam: { scope: '/boligvedlikehold/' },
+      notifyButton: { enable: false },
+    });
+  });
+</script>
 <style>
 /* ══════════════════════════════════════════
    TOKENS
@@ -3660,6 +3672,40 @@ function renderInnstillinger() {
       </div>
     </div>
 
+    <div class="settings-section-label"><i class="ti ti-bell" style="margin-right:5px;"></i>Push-varsler</div>
+    <div class="settings-card">
+      <div style="padding:14px 16px;">
+        ${(function() {
+          var perm = (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported';
+          if (perm === 'granted') {
+            return '<div style="display:flex;align-items:center;gap:10px;">' +
+              '<i class="ti ti-bell-check" style="font-size:22px;color:var(--green);flex-shrink:0;"></i>' +
+              '<div style="flex:1;">' +
+                '<div style="font-size:13.5px;font-weight:500;color:var(--ink);">Varsler er aktivert</div>' +
+                '<div style="font-size:12px;color:var(--ink3);margin-top:2px;">Du mottar push-varsler fra appen.</div>' +
+              '</div>' +
+              '<button class="btn-secondary" style="font-size:12px;" onclick="disablePushNotif()">Slå av</button>' +
+            '</div>';
+          }
+          if (perm === 'denied') {
+            return '<div style="display:flex;align-items:flex-start;gap:10px;">' +
+              '<i class="ti ti-bell-off" style="font-size:20px;color:var(--red);margin-top:2px;flex-shrink:0;"></i>' +
+              '<div><div style="font-size:13px;font-weight:500;color:var(--ink);">Varsler er blokkert</div>' +
+              '<div style="font-size:12px;color:var(--ink3);margin-top:3px;line-height:1.5;">Gå til nettleserinnstillinger → Nettsteder og tillat varsler fra denne siden.</div></div>' +
+            '</div>';
+          }
+          return '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<i class="ti ti-bell" style="font-size:22px;color:var(--ink3);flex-shrink:0;"></i>' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:13.5px;font-weight:500;color:var(--ink);">Push-varsler ikke aktivert</div>' +
+              '<div style="font-size:12px;color:var(--ink3);margin-top:2px;">Motta varsler om forfalte oppgaver — også når appen er lukket.</div>' +
+            '</div>' +
+            '<button class="btn-primary" style="font-size:12px;" onclick="enablePushNotif()"><i class="ti ti-bell"></i> Slå på</button>' +
+          '</div>';
+        })()}
+      </div>
+    </div>
+
     <div class="settings-section-label">Valgfrie oppgaveområder</div>
     <div class="settings-card">
       <div style="padding:0 16px;">
@@ -3863,6 +3909,43 @@ function getRenovasjonskostnader() {
 function fmtNOK(n) {
   if (n === null || n === undefined || isNaN(n)) return '—';
   return n.toLocaleString('nb-NO') + ' kr';
+}
+
+/* ════════════════════════════════════════
+   PUSH NOTIFICATIONS  (OneSignal)
+════════════════════════════════════════ */
+function enablePushNotif() {
+  if (!window.OneSignal) {
+    showToast('OneSignal SDK er ikke lastet ennå. Prøv igjen om et øyeblikk.', false);
+    return;
+  }
+  OneSignal.User.PushSubscription.optIn().then(function() {
+    renderInnstillinger();
+    showToast('🔔 Push-varsler aktivert!');
+  }).catch(function(err) {
+    showToast('Kunne ikke aktivere varsler: ' + (err.message || err), false);
+  });
+}
+
+function disablePushNotif() {
+  if (!window.OneSignal) return;
+  OneSignal.User.PushSubscription.optOut().then(function() {
+    renderInnstillinger();
+    showToast('Varsler slått av.');
+  });
+}
+
+/* Notify on open if overdue tasks exist */
+function maybeNotifyOverdue() {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  var overdue = (APP.tasks || []).filter(function(t) { return !t.done && t.due < new Date(); });
+  if (!overdue.length) return;
+  try {
+    new Notification(t('appName') || 'Boligvedlikehold', {
+      body: overdue.length + ' forfalt' + (overdue.length !== 1 ? 'e' : '') + ' oppgave' + (overdue.length !== 1 ? 'r' : '') + ' venter på deg.',
+      icon: 'https://fenanix.github.io/boligvedlikehold/icon-192.png',
+    });
+  } catch (_) {}
 }
 
 function toggleEkstraFeature(key) {
@@ -7749,6 +7832,8 @@ function openDocViewer(id) {
     updateRenoveringDot();
     // Load weather for active address
     loadWeatherForCurrentAddr();
+    // Notify about overdue tasks if permission granted
+    setTimeout(maybeNotifyOverdue, 2000);
     // Pull from cloud if room is set up
     if (getSyncMeta()) {
       setTimeout(function() { pullFromCloud(); }, 1000);
