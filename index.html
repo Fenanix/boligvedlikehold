@@ -3245,7 +3245,7 @@ function renderHjem() {
     visible = visible.filter(t => _asgn[t.id] === _mid);
   }
   else if (APP.filter !== 'all')          visible = visible.filter(t => t.cat === APP.filter);
-  visible.sort((a, b) => urgency(a) - urgency(b));
+  visible = applyTaskSort(visible);
 
   // Address dropdown
   const typeEmoji = { leilighet:'🏢', rekkehus:'🏘', enebolig:'🏠', sommerhytte:'🏖', vinterhytte:'❄️' };
@@ -3339,7 +3339,15 @@ function renderHjem() {
         '<div class="stat-card"><div class="stat-num green">' + done + '</div><div class="stat-lbl">' + t('done') + '</div></div>' +
       '</div>' +
       (infoText ? '<div class="info-banner"><i class="ti ti-info-circle"></i><span>' + infoText + '</span></div>' : '') +
-      '<div class="filter-bar">' + filterBtns + '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">' +
+        '<div class="filter-bar" style="flex:1;margin:0;">' + filterBtns + '</div>' +
+        (function() {
+          var m = SORT_MODES.find(function(x) { return x.key === _taskSort; });
+          return '<button onclick="cycleTaskSort()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;border:1px solid var(--paper3);background:' + (_taskSort !== 'default' ? 'var(--ink);color:var(--warm-white)' : 'var(--warm-white);color:var(--ink2)') + ';font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;" title="Bytt sortering">' +
+            '<i class="ti ' + m.icon + '" style="font-size:12px;"></i> ' + m.label +
+          '</button>';
+        })() +
+      '</div>' +
       '<div class="task-list">' + taskCards + '</div>' +
     '</div>';
 }
@@ -6968,6 +6976,47 @@ function getProjStatus() {
 
 var _projEditId    = null;
 var _projFilter    = 'all';
+
+/* Task list sort mode: 'default' | 'due' | 'category' */
+var _taskSort = 'default';
+
+var SORT_MODES = [
+  { key:'default',  icon:'ti-shield-check', label:'Anbefalt'    },
+  { key:'due',      icon:'ti-calendar',     label:'Forfallsdato' },
+  { key:'category', icon:'ti-layout-grid',  label:'Kategori'    },
+];
+
+function cycleTaskSort() {
+  var idx = SORT_MODES.findIndex(function(m) { return m.key === _taskSort; });
+  _taskSort = SORT_MODES[(idx + 1) % SORT_MODES.length].key;
+  renderHjem();
+}
+
+function applyTaskSort(tasks) {
+  var sorted = tasks.slice();
+  if (_taskSort === 'due') {
+    sorted.sort(function(a, b) {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return a.due - b.due;
+    });
+  } else if (_taskSort === 'category') {
+    sorted.sort(function(a, b) {
+      if (a.cat < b.cat) return -1;
+      if (a.cat > b.cat) return 1;
+      return urgency(a) - urgency(b);
+    });
+  } else {
+    /* default: urgency order, but sikkerhet always first within same urgency */
+    sorted.sort(function(a, b) {
+      var ua = urgency(a), ub = urgency(b);
+      if (ua !== ub) return ua - ub;
+      var sa = a.cat === 'sikkerhet' ? 0 : 1;
+      var sb = b.cat === 'sikkerhet' ? 0 : 1;
+      return sa - sb;
+    });
+  }
+  return sorted;
+}
 var _projExpandId  = null;
 var _newTaskInput  = {};   // { projId: inputValue }
 
