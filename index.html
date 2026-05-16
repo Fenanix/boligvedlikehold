@@ -1917,6 +1917,19 @@ input, select { font-family: var(--sans); }
   cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 
+/* ── Boligverdi ── */
+.verdi-strip {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px;
+}
+.verdi-card {
+  background: var(--warm-white); border: 1px solid var(--paper3);
+  border-radius: var(--r); padding: 12px 14px;
+}
+.verdi-card-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink3); margin-bottom: 4px; }
+.verdi-card-val { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+.verdi-card-val.pos { color: var(--green); }
+.verdi-card-val.neg { color: var(--red); }
+
 /* ── Report scanner ── */
 .scan-dropzone {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -3406,6 +3419,68 @@ function renderInnstillinger() {
       <i class="ti ti-plus"></i> Legg til adresse
     </button>
 
+    <!-- BOLIGVERDI -->
+    ${(function() {
+      var addr = APP.addresses.find(function(a) { return a.id === APP.activeAddr; });
+      if (!addr) return '';
+      var v = addr.verdi || {};
+      var renov = getRenovasjonskostnader();
+      var totalInv = (v.kjopspris || 0) + renov;
+      var gevinst = v.estimertVerdi != null ? v.estimertVerdi - totalInv : null;
+      var gevCls = gevinst === null ? '' : gevinst >= 0 ? ' pos' : ' neg';
+      var gevPfx = gevinst !== null && gevinst > 0 ? '+' : '';
+      return `
+      <div class="settings-section-label"><i class="ti ti-trending-up" style="margin-right:5px;"></i>Boligverdi</div>
+      <div class="settings-card">
+        <div style="padding:14px 16px 4px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div class="addr-field" style="margin:0;">
+              <label class="addr-label" for="bv-kjop">Kjøpspris</label>
+              <input class="addr-modal-input" id="bv-kjop" type="text" inputmode="numeric"
+                placeholder="F.eks. 4 500 000"
+                value="${v.kjopspris != null ? v.kjopspris.toLocaleString('nb-NO') : ''}"
+                onchange="saveBoligverdi('kjopspris',this.value)" />
+            </div>
+            <div class="addr-field" style="margin:0;">
+              <label class="addr-label" for="bv-dato">Kjøpsdato</label>
+              <input class="addr-modal-input" id="bv-dato" type="date"
+                value="${v.kjopsdato || ''}"
+                onchange="saveBoligverdi('kjopsdato',this.value)" />
+            </div>
+          </div>
+          <div class="addr-field" style="margin-bottom:14px;">
+            <label class="addr-label" for="bv-verdi">Estimert nåverdi</label>
+            <input class="addr-modal-input" id="bv-verdi" type="text" inputmode="numeric"
+              placeholder="F.eks. 5 200 000"
+              value="${v.estimertVerdi != null ? v.estimertVerdi.toLocaleString('nb-NO') : ''}"
+              onchange="saveBoligverdi('estimertVerdi',this.value)" />
+          </div>
+          <div class="verdi-strip">
+            <div class="verdi-card">
+              <div class="verdi-card-lbl">Kjøpt for</div>
+              <div class="verdi-card-val">${fmtNOK(v.kjopspris)}</div>
+            </div>
+            <div class="verdi-card">
+              <div class="verdi-card-lbl">Renoveringer (budsjett)</div>
+              <div class="verdi-card-val">${renov > 0 ? fmtNOK(renov) : '—'}</div>
+            </div>
+            <div class="verdi-card">
+              <div class="verdi-card-lbl">Total investering</div>
+              <div class="verdi-card-val">${totalInv > 0 ? fmtNOK(totalInv) : '—'}</div>
+            </div>
+            <div class="verdi-card" style="border-color:${gevinst === null ? 'var(--paper3)' : gevinst >= 0 ? 'var(--green-border)' : '#F0B8B4'};">
+              <div class="verdi-card-lbl">Estimert gevinst</div>
+              <div class="verdi-card-val${gevCls}">${gevinst !== null ? gevPfx + fmtNOK(gevinst) : '—'}</div>
+            </div>
+          </div>
+          <a href="https://www.eiendomsverdi.no" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--blue);text-decoration:none;padding-bottom:12px;">
+            <i class="ti ti-external-link" style="font-size:14px;"></i>
+            Hent profesjonell verdivurdering på eiendomsverdi.no
+          </a>
+        </div>
+      </div>`;
+    })()}
+
     <!-- PROFIL -->
     <div class="settings-section-label">Profil</div>
     <div class="settings-card">
@@ -3713,6 +3788,39 @@ function changeTypeSettings(type) {
   }
   renderInnstillinger();
 }
+/* ════════════════════════════════════════
+   BOLIGVERDI
+════════════════════════════════════════ */
+function saveBoligverdi(field, rawVal) {
+  var addr = APP.addresses.find(function(a) { return a.id === APP.activeAddr; });
+  if (!addr) return;
+  if (!addr.verdi) addr.verdi = {};
+  if (field === 'kjopsdato') {
+    addr.verdi[field] = rawVal || '';
+  } else {
+    var num = parseInt((rawVal + '').replace(/[^\d]/g, ''), 10);
+    addr.verdi[field] = isNaN(num) ? null : num;
+  }
+  saveAddresses(APP.addresses);
+  renderInnstillinger();
+}
+
+function getRenovasjonskostnader() {
+  var projects = loadProjects();
+  var total = 0;
+  projects.forEach(function(p) {
+    if (!p.budget) return;
+    var n = parseInt((p.budget + '').replace(/[^\d]/g, ''), 10);
+    if (!isNaN(n)) total += n;
+  });
+  return total;
+}
+
+function fmtNOK(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return n.toLocaleString('nb-NO') + ' kr';
+}
+
 function toggleEkstraFeature(key) {
   if (!APP.profile) return;
   var feats = (APP.profile.features || []).slice();
