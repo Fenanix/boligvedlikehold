@@ -3512,10 +3512,53 @@ function renderInnstillinger() {
               <div class="verdi-card-val${gevCls}">${gevinst !== null ? gevPfx + fmtNOK(gevinst) : '—'}</div>
             </div>
           </div>
-          <a href="https://www.eiendomsverdi.no" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--blue);text-decoration:none;padding-bottom:12px;">
-            <i class="ti ti-external-link" style="font-size:14px;"></i>
-            Hent profesjonell verdivurdering på eiendomsverdi.no
-          </a>
+          ${(function() {
+            var locality = addr.postalPlace || addr.cityName || '';
+            var pnr      = addr.postalCode  || '';
+            var gBase    = 'https://www.google.com/search?q=';
+            var links = [
+              {
+                icon:  'ti-home-search',
+                label: 'Finn lokal eiendomsmegler' + (locality ? ' i ' + locality : ''),
+                href:  pnr
+                  ? 'https://www.nef.no/finn-megler/?postnummer=' + encodeURIComponent(pnr)
+                  : gBase + encodeURIComponent('eiendomsmegler' + (locality ? ' ' + locality : '')),
+                sub:   pnr ? 'nef.no – Norges Eiendomsmeglerforbund' : 'Google-søk',
+                color: 'var(--blue)',
+              },
+              {
+                icon:  'ti-clipboard-list',
+                label: 'Finn lokal takstmann' + (locality ? ' i ' + locality : ''),
+                href:  pnr
+                  ? 'https://www.nitotakst.no/finn-takstmann/?postnummer=' + encodeURIComponent(pnr)
+                  : gBase + encodeURIComponent('takstmann' + (locality ? ' ' + locality : '')),
+                sub:   pnr ? 'nitotakst.no – NITO Takst' : 'Google-søk',
+                color: 'var(--green)',
+              },
+              {
+                icon:  'ti-building-estate',
+                label: 'Sammenlign boligpriser' + (locality ? ' i ' + locality : ''),
+                href:  gBase + encodeURIComponent('boligpriser' + (locality ? ' ' + locality : '') + ' 2025'),
+                sub:   'Google-søk',
+                color: 'var(--orange)',
+              },
+            ];
+            return '<div style="margin-top:4px;margin-bottom:4px;">' +
+              '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:8px;">Lokale fagpersoner</div>' +
+              links.map(function(l) {
+                return '<a href="' + l.href + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--paper3);text-decoration:none;">' +
+                  '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:' + l.color + '18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+                    '<i class="ti ' + l.icon + '" style="font-size:16px;color:' + l.color + ';"></i>' +
+                  '</div>' +
+                  '<div style="flex:1;min-width:0;">' +
+                    '<div style="font-size:13px;font-weight:500;color:var(--ink);">' + l.label + '</div>' +
+                    '<div style="font-size:11px;color:var(--ink3);">' + l.sub + '</div>' +
+                  '</div>' +
+                  '<i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);flex-shrink:0;"></i>' +
+                '</a>';
+              }).join('') +
+            '</div>';
+          })()}
         </div>
       </div>`;
     })()}
