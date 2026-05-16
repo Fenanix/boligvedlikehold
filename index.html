@@ -3538,6 +3538,24 @@ function renderInnstillinger() {
       </div>
     </div>
 
+    <div class="settings-section-label">Valgfrie oppgaveområder</div>
+    <div class="settings-card">
+      <div style="padding:0 16px;">
+        ${EKSTRA_OPTIONS.map(function(opt) {
+          var feats = (APP.profile && APP.profile.features) || [];
+          var on = feats.includes(opt.val);
+          return '<div class="setting-row">' +
+            '<div class="setting-row-left">' +
+              '<div class="setting-row-label"><i class="ti ' + opt.icon + '" style="margin-right:6px;vertical-align:-2px;font-size:15px;"></i>' + opt.label + '</div>' +
+              '<div class="setting-row-sub">' + opt.sub + '</div>' +
+            '</div>' +
+            '<button class="toggle-btn ' + (on ? 'on' : 'off') + '" onclick="toggleEkstraFeature(\'' + opt.val + '\')"></button>' +
+          '</div>';
+        }).join('')}
+        ${!APP.profile ? '<p style="font-size:12px;color:var(--ink3);padding-bottom:12px;">Kjør oppsett under Profil for å aktivere valgfrie oppgaver.</p>' : ''}
+      </div>
+    </div>
+
     <div class="settings-section-label">${t('aiProviderLabel')} – AI-analyse</div>
     <div class="settings-card">
       <div style="padding:16px;">
@@ -3689,6 +3707,18 @@ function changeTypeSettings(type) {
   }
   renderInnstillinger();
 }
+function toggleEkstraFeature(key) {
+  if (!APP.profile) return;
+  var feats = (APP.profile.features || []).slice();
+  var idx = feats.indexOf(key);
+  if (idx === -1) feats.push(key); else feats.splice(idx, 1);
+  APP.profile.features = feats;
+  saveProfile(APP.profile);
+  setTypeFromProfile(APP.profile);
+  renderInnstillinger();
+  showToast((feats.includes(key) ? '✓ ' : '— ') + EKSTRA_OPTIONS.find(function(o){return o.val===key;}).label);
+}
+
 function startSurveyFromSettings() {
   var profile = loadProfile();
   if (profile) {
@@ -4952,6 +4982,16 @@ function undoRecord(taskId) {
 let SV = {};
 let surveyStep = 0;
 
+const EKSTRA_OPTIONS = [
+  { val: 'renhold',    icon: 'ti-shirt',            label: 'Renhold & Hygiene',        sub: 'Bytte sengetøy, håndklær, vask dusjforheng og mer' },
+  { val: 'stoppekran', icon: 'ti-droplet',          label: 'Vann & sikkerhet',         sub: 'Test stoppekran og trykkventil 1–2 × i året' },
+  { val: 'legionella', icon: 'ti-refresh',          label: 'Legionella-forebygging',   sub: 'Spyl sjelden-brukte kraner månedlig' },
+  { val: 'inneklima',  icon: 'ti-air-conditioning', label: 'Ventilasjon & inneklima',  sub: 'Rens baderomsvifte hvert kvartal' },
+  { val: 'mekanisk',   icon: 'ti-tool-2',           label: 'Smøring & mekanisk',       sub: 'Låser, hengsler og skyvedører 1 × per år' },
+  { val: 'frostvern',  icon: 'ti-snowflake',        label: 'Frostbeskyttelse',         sub: 'Sjekk isolasjon på rør i kalde rom om høsten' },
+  { val: 'royktest',   icon: 'ti-flame',            label: 'Månedlig røykvarsel-test', sub: 'Trykk testknappen på alle varslere' },
+];
+
 const SURVEY_STEPS = [
   // Step 0: Intro (no question, just welcome)
   { type: 'intro' },
@@ -5059,16 +5099,8 @@ const SURVEY_STEPS = [
     type: 'multi',
     key: 'ekstra',
     question: 'Vil du ha påminnelse om disse oppgavene?',
-    hint: 'Valgfritt – velg det som passer deg. Du kan endre det i innstillinger når som helst.',
-    options: [
-      { val: 'renhold',    icon: 'ti-shirt',            label: 'Renhold & Hygiene',        sub: 'Bytte sengetøy, håndklær, vask dusjforheng og mer' },
-      { val: 'stoppekran', icon: 'ti-droplet',         label: 'Vann & sikkerhet',         sub: 'Test stoppekran og trykkventil 1–2 × i året' },
-      { val: 'legionella', icon: 'ti-refresh',          label: 'Legionella-forebygging',   sub: 'Spyl sjelden-brukte kraner månedlig' },
-      { val: 'inneklima',  icon: 'ti-air-conditioning', label: 'Ventilasjon & inneklima',  sub: 'Rens baderomsvifte hvert kvartal' },
-      { val: 'mekanisk',   icon: 'ti-tool-2',           label: 'Smøring & mekanisk',       sub: 'Låser, hengsler og skyvedører 1 × per år' },
-      { val: 'frostvern',  icon: 'ti-snowflake',        label: 'Frostbeskyttelse',         sub: 'Sjekk isolasjon på rør i kalde rom om høsten' },
-      { val: 'royktest',   icon: 'ti-flame',            label: 'Månedlig røykvarsel-test', sub: 'Trykk testknappen på alle varslere' },
-    ],
+    hint: 'Valgfritt – velg det som passer deg. Du kan slå dem av og på i Innstillinger når som helst.',
+    options: EKSTRA_OPTIONS,
   },
 
   // Step 8: Erfaring med vedlikehold
