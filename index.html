@@ -4436,7 +4436,7 @@ const STRINGS = {
     legalDisclaimer:'Denne oversikten er veiledende. Kommunale bestemmelser kan stille strengere krav. Snakk alltid med kommunen eller en godkjent fagperson ved tvil. Dette er ikke juridisk rådgivning.',
     canDoSelf:'Kan gjøres selv', forbidden:'Fagfolk kreves', conditions:'Betingelser',
     languageCountry:'Språk og land', language:'Språk', country:'Land', projects:'Prosjekter',
-    projNew:'Nytt', projActive:'Pågår', projPlanned:'Planlagt', projPaused:'Pauset',
+    projNew:'Nytt prosjekt', projActive:'Pågår', projPlanned:'Planlagt', projPaused:'Pauset',
     projEmptyTitle:'Ingen prosjekter ennå', projEmptyTitleFilter:'Ingen i denne kategorien',
     projEmptyDesc:'Legg til renoveringsprosjekter og oppussingsplaner. Hold orden på budsjett, oppgaver og fremdrift – separat fra det løpende vedlikeholdet.',
     projEmptyFilterDesc:'Prøv et annet filter.', projEmptyBtn:'Legg til første prosjekt',
@@ -4533,7 +4533,7 @@ const STRINGS = {
     legalDisclaimer:'Denna översikt är vägledande. Kommunala bestämmelser kan ställa strängare krav. Tala alltid med kommunen eller en godkänd fackperson vid tveksamheter. Detta är inte juridisk rådgivning.',
     canDoSelf:'Får göras själv', forbidden:'Fackfolk krävs', conditions:'Villkor',
     languageCountry:'Språk och land', language:'Språk', country:'Land', projects:'Projekt',
-    projNew:'Nytt', projActive:'Pågår', projPlanned:'Planerat', projPaused:'Pausat',
+    projNew:'Nytt projekt', projActive:'Pågår', projPlanned:'Planerat', projPaused:'Pausat',
     projEmptyTitle:'Inga projekt ännu', projEmptyTitleFilter:'Inga i denna kategori',
     projEmptyDesc:'Lägg till renoveringsprojekt och upprustningsplaner. Håll koll på budget, uppgifter och framsteg – separat från det löpande underhållet.',
     projEmptyFilterDesc:'Prova ett annat filter.', projEmptyBtn:'Lägg till första projekt',
@@ -4629,7 +4629,7 @@ const STRINGS = {
     legalDisclaimer:'Denne oversigt er vejledende. Kommunale regler kan stille strengere krav. Tal altid med kommunen eller en godkendt fagperson ved tvivl. Dette er ikke juridisk rådgivning.',
     canDoSelf:'Må gøres selv', forbidden:'Forbudt / fagfolk', conditions:'Betingelser',
     languageCountry:'Sprog og land', language:'Sprog', country:'Land', projects:'Projekter',
-    projNew:'Nyt', projActive:'I gang', projPlanned:'Planlagt', projPaused:'På pause',
+    projNew:'Nyt projekt', projActive:'I gang', projPlanned:'Planlagt', projPaused:'På pause',
     projEmptyTitle:'Ingen projekter endnu', projEmptyTitleFilter:'Ingen i denne kategori',
     projEmptyDesc:'Tilføj renoveringsprojekter og istandsættelsesplaner. Hold styr på budget, opgaver og fremskridt – adskilt fra den løbende vedligeholdelse.',
     projEmptyFilterDesc:'Prøv et andet filter.', projEmptyBtn:'Tilføj første projekt',
@@ -4725,7 +4725,7 @@ const STRINGS = {
     legalDisclaimer:'This overview is for guidance only. Local rules may apply. Always consult your local authority or a qualified professional when in doubt. This is not legal advice.',
     canDoSelf:'Can do yourself', forbidden:'Tradesman required', conditions:'Conditions apply',
     languageCountry:'Language and country', language:'Language', country:'Country', projects:'Projects',
-    projNew:'New', projActive:'Active', projPlanned:'Planned', projPaused:'Paused',
+    projNew:'New project', projActive:'Active', projPlanned:'Planned', projPaused:'Paused',
     projEmptyTitle:'No projects yet', projEmptyTitleFilter:'None in this category',
     projEmptyDesc:'Add renovation projects and improvement plans. Track budget, tasks and progress – separate from your routine maintenance.',
     projEmptyFilterDesc:'Try another filter.', projEmptyBtn:'Add first project',
@@ -4821,7 +4821,7 @@ const STRINGS = {
     legalDisclaimer:'Diese Übersicht ist unverbindlich. Lokale Vorschriften können strenger sein. Im Zweifel immer die Gemeinde oder einen Fachmann konsultieren. Dies ist keine Rechtsberatung.',
     canDoSelf:'Selbst erlaubt', forbidden:'Fachmann erforderlich', conditions:'Bedingungen',
     languageCountry:'Sprache und Land', language:'Sprache', country:'Land', projects:'Projekte',
-    projNew:'Neu', projActive:'Aktiv', projPlanned:'Geplant', projPaused:'Pausiert',
+    projNew:'Neues Projekt', projActive:'Aktiv', projPlanned:'Geplant', projPaused:'Pausiert',
     projEmptyTitle:'Noch keine Projekte', projEmptyTitleFilter:'Keine in dieser Kategorie',
     projEmptyDesc:'Fügen Sie Renovierungsprojekte und Verbesserungspläne hinzu. Behalten Sie Budget, Aufgaben und Fortschritt im Blick – getrennt von der laufenden Wartung.',
     projEmptyFilterDesc:'Anderen Filter versuchen.', projEmptyBtn:'Erstes Projekt hinzufügen',
@@ -4917,7 +4917,7 @@ const STRINGS = {
     legalDisclaimer:'Dit overzicht is indicatief. Lokale regelgeving kan strengere eisen stellen. Raadpleeg altijd een professional bij twijfel. Dit is geen juridisch advies.',
     canDoSelf:'Zelf toegestaan', forbidden:'Vakman vereist', conditions:'Voorwaarden',
     languageCountry:'Taal en land', language:'Taal', country:'Land', projects:'Projecten',
-    projNew:'Nieuw', projActive:'Actief', projPlanned:'Gepland', projPaused:'Gepauzeerd',
+    projNew:'Nieuw project', projActive:'Actief', projPlanned:'Gepland', projPaused:'Gepauzeerd',
     projEmptyTitle:'Nog geen projecten', projEmptyTitleFilter:'Geen in deze categorie',
     projEmptyDesc:'Voeg renovatieprojecten en verbeteringsplannen toe. Houd budget, taken en voortgang bij – los van het reguliere onderhoud.',
     projEmptyFilterDesc:'Probeer een ander filter.', projEmptyBtn:'Eerste project toevoegen',
@@ -7130,7 +7130,7 @@ function renderRenovering() {
       '<h2>' + t('projects') + '</h2>' +
       '<div style="display:flex;gap:6px;">' +
         '<button class="btn-secondary" style="font-size:13px;padding:8px 12px;" onclick="openScanModal()" title="' + t('scanReport') + '"><i class="ti ti-file-search"></i> ' + t('scanReport') + '</button>' +
-        '<button class="btn-primary"   style="font-size:13px;padding:8px 14px;" onclick="openProjModal()"><i class="ti ti-plus"></i> ' + t('projNew') + '</button>' +
+        '<button class="btn-primary" style="font-size:13px;padding:8px 16px;border-radius:20px;" onclick="openProjModal()"><i class="ti ti-plus"></i> ' + t('projNew') + '</button>' +
       '</div>' +
     '</div>' +
     '<div class="ren-stat-strip">' +
