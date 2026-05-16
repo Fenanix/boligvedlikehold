@@ -2275,7 +2275,7 @@ input, select { font-family: var(--sans); }
     <div class="topbar-title">
       <i class="ti ti-home"></i>
       <span id="topbar-app-name">Boligvedlikehold</span>
-      <span class="version-chip">v0.0.011.a</span>
+      <span class="version-chip">v0.1.0</span>
     </div>
     <div class="topbar-right">
       <div class="ha-indicator" id="ha-dot" title="Home Assistant status"></div>
@@ -2427,7 +2427,7 @@ input, select { font-family: var(--sans); }
    STATE
 ════════════════════════════════════════ */
 const APP = {
-  version:      '0.0.011.a',
+  version:      '0.1.0',
   page:         'hjem',
   boligtype:    'leilighet',
   filter:       'all',
@@ -3611,7 +3611,7 @@ function renderInnstillinger() {
       <div style="padding:16px;">
         <div class="setting-row">
           <div class="setting-row-left"><div class="setting-row-label">Versjon</div><div class="setting-row-sub">Boligvedlikehold</div></div>
-          <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.0.011.a</span>
+          <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.1.0</span>
         </div>
         <div class="setting-row">
           <div class="setting-row-left"><div class="setting-row-label">Oppgaver lastet</div><div class="setting-row-sub">For ${APP.boligtype}</div></div>
@@ -3884,7 +3884,7 @@ function exportGCal() {
 function exportICS() {
   const tasks = getKalTasks();
   if (!tasks.length) { showToast(t('noTasksShort'), false); return; }
-  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Boligvedlikehold v0.0.011.a//NO\r\n';
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Boligvedlikehold v0.1.0//NO\r\n';
   tasks.forEach(t => {
     const s = new Date(t.due); s.setHours(9, 0, 0, 0);
     const e = new Date(s);     e.setHours(10, 0, 0, 0);
