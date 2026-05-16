@@ -6953,17 +6953,31 @@ function toggleProjExpand(id) {
 /* ── Main render ── */
 function renderRenovering() {
   var projects = loadProjects();
-  var filtered = _projFilter === 'all' ? projects
-    : _projFilter === 'active' ? projects.filter(function(p) { return p.status === 'active'; })
-    : _projFilter === 'planned' ? projects.filter(function(p) { return p.status === 'planned'; })
-    : _projFilter === 'done' ? projects.filter(function(p) { return p.status === 'done'; })
-    : projects;
+
+  /* Filter by status or category */
+  var filtered;
+  if (_projFilter === 'all')          filtered = projects.slice();
+  else if (_projFilter === 'active')  filtered = projects.filter(function(p) { return p.status === 'active'; });
+  else if (_projFilter === 'planned') filtered = projects.filter(function(p) { return p.status === 'planned'; });
+  else if (_projFilter === 'done')    filtered = projects.filter(function(p) { return p.status === 'done'; });
+  else if (_projFilter.startsWith('cat:')) {
+    var _catKey = _projFilter.slice(4);
+    filtered = projects.filter(function(p) { return p.category === _catKey; });
+  } else { filtered = projects.slice(); }
+
+  /* Sort: done projects always sink to the bottom */
+  filtered.sort(function(a, b) {
+    var aD = a.status === 'done' ? 1 : 0;
+    var bD = b.status === 'done' ? 1 : 0;
+    return aD - bD;
+  });
 
   var active  = projects.filter(function(p) { return p.status === 'active'; }).length;
   var planned = projects.filter(function(p) { return p.status === 'planned'; }).length;
   var done    = projects.filter(function(p) { return p.status === 'done'; }).length;
 
-  var filterPills = [
+  /* Status filter pills */
+  var statusPills = [
     { key:'all',     label:t('allTasks') + ' (' + projects.length + ')' },
     { key:'active',  label:t('projActive') },
     { key:'planned', label:t('projPlanned') },
@@ -6971,6 +6985,23 @@ function renderRenovering() {
   ].map(function(f) {
     return '<button class="pill' + (_projFilter===f.key?' active':'') + '" onclick="_projFilter=this.dataset.f;renderRenovering()" data-f="' + f.key + '">' + f.label + '</button>';
   }).join('');
+
+  /* Category filter pills — only show categories that exist */
+  var existingCatKeys = projects.reduce(function(acc, p) {
+    if (p.category && acc.indexOf(p.category) === -1) acc.push(p.category);
+    return acc;
+  }, []);
+  var catPills = existingCatKeys.length > 1
+    ? existingCatKeys.map(function(key) {
+        var info = getProjCats().find(function(c) { return c.key === key; });
+        if (!info) return '';
+        var fKey = 'cat:' + key;
+        return '<button class="pill' + (_projFilter===fKey?' active':'') + '" onclick="_projFilter=this.dataset.f;renderRenovering()" data-f="' + fKey + '">' +
+          '<i class="ti ' + info.icon + '"></i> ' + info.label + '</button>';
+      }).join('')
+    : '';
+
+  var filterPills = statusPills + catPills;
 
   var projectCards = filtered.length === 0
     ? '<div class="ren-empty">' +
