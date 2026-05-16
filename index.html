@@ -2447,7 +2447,7 @@ input, select { font-family: var(--sans); }
   <div class="addr-modal-overlay" onclick="if(event.target===this)closeShareModal()">
     <div class="addr-modal">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h3 style="margin:0;"><i class="ti ti-users" style="margin-right:8px;font-size:18px;vertical-align:-2px;"></i>Boligdeling</h3>
+        <h3 style="margin:0;"><i class="ti ti-users" style="margin-right:8px;font-size:18px;vertical-align:-2px;"></i>Bolig-deling</h3>
         <button onclick="closeShareModal()" style="background:none;border:none;font-size:20px;color:var(--ink3);cursor:pointer;"><i class="ti ti-x"></i></button>
       </div>
       <div id="share-modal-body"></div>
@@ -3205,7 +3205,7 @@ function renderHjem() {
         '</div>' +
         '<button class="addr-add-btn" onclick="openShareModal()" title="Deling og medlemmer" style="width:auto;padding:0 10px;gap:5px;font-size:12px;font-weight:600;' + (hasMems ? 'border-color:var(--green);color:var(--green);' : '') + '">' +
           '<i class="ti ti-users" style="font-size:16px;"></i>' +
-          '<span class="addr-btn-label">Boligdeling</span>' +
+          '<span class="addr-btn-label">Bolig-deling</span>' +
         '</button>' +
         '<button class="addr-add-btn" onclick="openAddrModal()" title="Legg til adresse" style="width:auto;padding:0 10px;gap:5px;font-size:12px;font-weight:600;">' +
           '<i class="ti ti-plus" style="font-size:16px;"></i>' +
@@ -3411,7 +3411,7 @@ function renderInnstillinger() {
     </div>
 
     <!-- DELING -->
-    <div class="settings-section-label">Boligdeling</div>
+    <div class="settings-section-label">Bolig-deling</div>
     <div class="settings-card" style="margin-bottom:10px;">
       <div style="padding:16px;">
         ${(function() {
@@ -6030,7 +6030,7 @@ function updateSyncUI() {
 
 function schedulePush() { /* cloud sync removed – use Export/Import */ }
 
-/* ── Boligdeling: export & import ── */
+/* ── Bolig-deling: export & import ── */
 function exportBoligdata() {
   var addr = APP.addresses.find(function(a) { return a.id === APP.activeAddr; });
   if (!addr) return;
