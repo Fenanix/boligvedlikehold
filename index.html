@@ -2727,6 +2727,16 @@ const ALL_TASKS = [
   { id:96, interval:365, title:'Sjekk og rens sluk og rister på gårdsplass',        cat:'uteareal', icon:'ti-road', due:addDays(10),  freq:'Vår og høst',             types:['rekkehus','enebolig'], fagfolk:null, yt:'rense avløpssluk gårdsplass rist', desc:'Tette sluk på gårdsplass gir vannansamling og vintersprekker i belegget. Enkelt å rense – tar 10 minutter.', steps:['Løft risten og fjern blader, grus og smuss fra kurven under.','Skyll med hageslange eller bøtte vann – vannet skal renne fritt.','Sjekk at selve rørforbindelsen ikke er tett (bruk en pinne for å kjenne etter).','Tett ledning: bruk avløpsåpner eller ringleder med trykkspyling.','Legg risten tilbake og sjekk at den sitter stødig og ikke vagger.']},
   { id:97, interval:730, title:'Oljebehandle eller forsegle ny asfalt',             cat:'uteareal', icon:'ti-road', due:addDays(90),  freq:'Hvert 2.–3. år',          types:['rekkehus','enebolig'], fagfolk:{ ma:'asfaltering forseglingssystem innkjørsel', g:'forsegle asfalt innkjørsel sealcoat' }, yt:'forsegle asfalt innkjørsel sealcoat', desc:'Asfaltolje (sealcoating) beskytter mot UV-stråling, vann og salt som bryter ned bindemiddelet i asfalten. Livstidsforlenger for innkjørselen.', steps:['Rens asfalten grundig – høytrykkspyl og la tørke minst 48 timer.','Reparer alle sprekker og hull først – forseglingen dekker over, men fikser ikke strukturproblemer.','Påfør asfaltolje med rulle eller sprøyte i 2 strøk – følg produsentens tørketid mellom strøkene.','Sperr av området i minst 24 timer etter siste strøk.','Utfør ikke behandlingen under 10 °C eller ved fare for regn – bindemiddelet trenger varme for å herde.']},
 
+  // ── EKSTRA VALGFRIE OPPGAVER (opt-in via survey) ──
+  { id:111, interval:180, title:'Test stoppekranen',                                cat:'ror',      icon:'ti-droplet', due:addDays(90),  freq:'To ganger i året',         types:['rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:{ ma:'rørlegger stoppekran bytte', g:'stoppekran sitter fast hva gjøre' }, yt:'finne teste stoppekran bolig', desc:'Stoppekranen er eneste måte å stenge vannet raskt ved en lekkasje. En kran som aldri er betjent kan sitte fast akkurat når du trenger den.', steps:['Finn stoppekranen – vanligvis under kjøkkenvasken, i bod eller kjeller.','Drei sakte til stengt posisjon (med urviseren).','Sjekk at vannet stanser: åpne en kran og se.','Drei tilbake til åpen posisjon.','Hard å dreie eller lekker: tilkall rørlegger for utskifting.'] },
+  { id:112, interval:365, title:'Test trykkavlastningsventil på varmtvannsbereder',  cat:'ror',      icon:'ti-droplet', due:addDays(180), freq:'Én gang i året',             types:['rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:{ ma:'rørlegger varmtvannsbereder ventil', g:'trykkavlastningsventil varmtvannsbereder test' }, yt:'test trykkventil varmtvannsbereder', desc:'Trykkavlastningsventilen er et sikkerhetsutstyr som hindrer berederen i å eksplodere ved overtrykk. De fleste vet ikke at den finnes eller at den bør testes.', steps:['Hold en bøtte under utløpsrøret på ventilen (sitter på siden eller toppen av berederen).','Løft opp ventilhåndtaket forsiktig i 2–3 sekunder.','Vann skal renne ut – dette er normalt og betyr at den fungerer.','Slipp håndtaket – vannet skal stoppe.','Ingen vann eller klikk: Ventilen er defekt. Ring rørlegger umiddelbart.'] },
+  { id:113, interval:30,  title:'Spyl sjelden-brukte tappesteder (Legionella)',      cat:'ror',      icon:'ti-droplet', due:addDays(14),  freq:'Månedlig',                 types:['leilighet','rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:null, yt:'legionella forebygging hjemme spyle rør', desc:'Stillestående vann i rør over 20 °C gir grobunn for Legionella-bakterier. Spyling er enkelt og tar bare noen minutter.', steps:['Åpne alle sjelden-brukte kraner: gjestebad, hyttebad, utekran.','La kaldt vann renne i minst 2 minutter.','Gjenta med varmtvannet i 1 minutt.','Spyl også dusj og badekar i sjelden-brukte rom.','Gjøres alltid etter lengre fraværsperioder (ferie, hytte som har stått tom).'] },
+  { id:114, interval:90,  title:'Rens baderomsvifte og ventilasjonsrister',          cat:'apparater',icon:'ti-tool',    due:addDays(45),  freq:'Hvert 3. måned',           types:['leilighet','rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:null, yt:'rense baderomsvifte støv guide', desc:'Støvbelagt baderomsvifte trekker dårlig, gir fukt og mugg, og kan overopphetes. En rask kvartalsvis rensing holder den effektiv og stille.', steps:['Slå av strøm til viften (bryter eller sikring).','Press inn og drei dekselet for å ta det av (eller løsne skruer).','Støvsug filteret og viftebladet grundig.','Tørk av dekselet med fuktig klut.','Sett på plass og gjenopprett strøm.','Sjekk at viften trekker ved å holde et toalettpapir foran – det skal suges til.'] },
+  { id:115, interval:365, title:'Smør låser, hengsler og skyvedører',                cat:'utvendig', icon:'ti-building',due:addDays(180), freq:'Én gang i året',             types:['rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:null, yt:'smøre lås dør hengsel tips', desc:'Tørre hengsler knirker og slites raskere. Låser uten smøring kan fryse om vinteren eller sette seg fast. En enkel økt om høsten forebygger mye.', steps:['Spray silikonspray eller grafittpulver i alle ytterdørlåser og nøkkelhull.','Drypp litt olje (symaskinolje eller lett maskinfett) på alle ytterdørhengsler.','Test skyvedører og skyvevindu – de skal gli lett uten å henge.','Smør portlåser, garasjedøren, brevsprekke og adgangskontroll.','Unngå vanlig olje i lås om vinteren – bruk lås-spray (tørr type) som tåler frost.'] },
+  { id:116, interval:365, title:'Vedlikehold garasjeport og -mekanisme',             cat:'utvendig', icon:'ti-building',due:addDays(180), freq:'Én gang i året',             types:['rekkehus','enebolig'], fagfolk:{ ma:'garasjeport service vedlikehold', g:'garasjeport fjær bytte vedlikehold' }, yt:'vedlikehold garasjeport mekanisme smøre', desc:'Garasjeportens fjær og skinne trenger jevnlig smøring. En defekt fjær kan gjøre porten ubrukelig og er farlig å skifte selv.', steps:['Spray silikonspray på skinner og ruller.','Smør fjærmekanismen med lett olje (ikke WD-40 – løser opp smøringen igjen).','Test nødstopp: hold en trebit i portens vei og slipp av-knappen – porten skal stoppe.','Sjekk at alle bolter og skruer sitter fast.','Knarrende lyd eller hard port: tilkall fagfolk – fjærene er under høyt trykk og er farlige å skifte uten utstyr.'] },
+  { id:117, interval:365, title:'Sjekk isolasjon på rør i kalde rom',                cat:'ror',      icon:'ti-droplet', due:addDays(90),  freq:'Én gang i året (høst)',    types:['rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:{ ma:'rørisolasjon kald kjeller garasje', g:'isolere rør garasje kjeller frostbeskyttelse' }, yt:'isolere rør frostbeskyttelse bolig', desc:'Uisolerte rør i kalde garasjer og kjellere kan fryse og sprekke. Skaden kan gi massive vannlekkasjer og store kostnader.', steps:['Sjekk alle synlige rør i garasje, kald kjeller og kryprom.','Er rørisolasjonen sprukken, myk eller manglende: bytt med rørskumrør fra jernvarehandelen.','Steng og tøm utekraner og hageslangen om høsten.','For hytte: steng totalvannet og tøm alle rør – husk toalettsifong med frostvæske.','Installer frostsensor eller varmeband ved særlig utsatte rør.'] },
+  { id:118, interval:30,  title:'Test alle røykvarslere',                            cat:'sikkerhet',icon:'ti-flame',   due:addDays(14),  freq:'Månedlig',                 types:['leilighet','rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:null, yt:'teste røykvarsler sjekk', desc:'Batteriet kan sitte, men selve elektronikken kan svikte uten varsel. En rask test månedlig gir deg visshet om at de virker.', steps:['Finn alle røykvarslere i boligen.','Hold testknappen inne i 5 sekunder til alarmen lyder.','Ingen lyd? Sjekk batteriet – bytt med nytt.','Fortsatt ingen lyd med nytt batteri: Bytt hele enheten.','Husk også varslere i soverom, gang og eventuelt kjeller.'] },
+
   // ── RENHOLD & HYGIENE ──
   { id:101, interval:14,  title:'Bytt sengetøy',                               cat:'renhold', icon:'ti-shirt', due:addDays(7),  freq:'Annenhver uke',     types:['leilighet','rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:null, yt:'bytte sengetøy tips søvnkvalitet', desc:'Sengetøy samler husstøvmidd, svette og hudceller. Jevnlig bytte gir bedre søvnkvalitet og kan redusere allergiplager merkbart.', steps:['Ta av dynetrekk, putevarer og laken.','Vask alt på 60 °C for å drepe husstøvmidd (40 °C for delikate materialer).','Luft dynen og madrassen mens vasken pågår – åpne vinduet.','Tre på rent sengetøy og rett ut alle rynker.']},
   { id:102, interval:7,   title:'Bytt håndklær på bad og kjøkken',             cat:'renhold', icon:'ti-shirt', due:addDays(3),  freq:'Ukentlig',          types:['leilighet','rekkehus','enebolig','sommerhytte','vinterhytte'], fagfolk:null, yt:null, desc:'Fuktige håndklær er grobunn for bakterier, gjær og sopp. Bytt ukentlig og vask på 60 °C.', steps:['Samle alle badehåndklær og kjøkkenhåndkle.','Vask på 60 °C – unngå bløtgjøring som kan svekke fibrene.','Heng håndklær til ordentlig tørk etter bruk – aldri la ligge på gulvet.','Sett ut rene håndklær til alle.']},
@@ -5044,7 +5054,23 @@ const SURVEY_STEPS = [
     ],
   },
 
-  // Step 7: Erfaring med vedlikehold
+  // Step 7: Ekstra valgfrie oppgaveområder
+  {
+    type: 'multi',
+    key: 'ekstra',
+    question: 'Vil du ha påminnelse om disse oppgavene?',
+    hint: 'Valgfritt – velg det som passer deg. Du kan endre det i innstillinger når som helst.',
+    options: [
+      { val: 'stoppekran', icon: 'ti-droplet',         label: 'Vann & sikkerhet',         sub: 'Test stoppekran og trykkventil 1–2 × i året' },
+      { val: 'legionella', icon: 'ti-refresh',          label: 'Legionella-forebygging',   sub: 'Spyl sjelden-brukte kraner månedlig' },
+      { val: 'inneklima',  icon: 'ti-air-conditioning', label: 'Ventilasjon & inneklima',  sub: 'Rens baderomsvifte hvert kvartal' },
+      { val: 'mekanisk',   icon: 'ti-tool-2',           label: 'Smøring & mekanisk',       sub: 'Låser, hengsler og skyvedører 1 × per år' },
+      { val: 'frostvern',  icon: 'ti-snowflake',        label: 'Frostbeskyttelse',         sub: 'Sjekk isolasjon på rør i kalde rom om høsten' },
+      { val: 'royktest',   icon: 'ti-flame',            label: 'Månedlig røykvarsel-test', sub: 'Trykk testknappen på alle varslere' },
+    ],
+  },
+
+  // Step 8: Erfaring med vedlikehold
   {
     type: 'single',
     key: 'erfaring',
@@ -5383,7 +5409,7 @@ function buildProfile() {
     name:        SV.name        || '',
     boligtype:   SV.boligtype   || 'enebolig',
     alder:       SV.alder       || 'middel',
-    features:    SV.features    || [],
+    features:    [...(SV.features || []), ...(SV.ekstra || [])],
     etasjer:     SV.etasjer     || '2',
     hvitevarer:  SV.hvitevarer  || [],
     erfaring:    SV.erfaring    || 'middels',
@@ -5432,7 +5458,17 @@ function computeTasksForProfile(profile) {
     if (t.id === 51 && !features.includes('motorsag'))            return false;
 
     // Garasje
-    if (t.id === 34 && !features.includes('garasje'))             return false;
+    if (t.id === 34  && !features.includes('garasje'))            return false;
+
+    // Ekstra opt-in oppgaver
+    if (t.id === 111 && !features.includes('stoppekran'))          return false;
+    if (t.id === 112 && !features.includes('stoppekran'))          return false;
+    if (t.id === 113 && !features.includes('legionella'))          return false;
+    if (t.id === 114 && !features.includes('inneklima'))           return false;
+    if (t.id === 115 && !features.includes('mekanisk'))            return false;
+    if (t.id === 116 && !features.includes('garasje'))             return false;
+    if (t.id === 117 && !features.includes('frostvern'))           return false;
+    if (t.id === 118 && !features.includes('royktest'))            return false;
 
     // Hvitevarer filtering
     if (t.id === 61 && !hvitevarer.includes('oppvask'))           return false;
