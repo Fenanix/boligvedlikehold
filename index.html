@@ -3147,23 +3147,46 @@ function showToast(msg, ok = true) {
    NAVIGATION
 ════════════════════════════════════════ */
 function navigate(page) {
-  APP.page = page;
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + page).classList.add('active');
-  document.getElementById('scroll-area').scrollTop = 0;
-  renderPage();
+  try {
+    APP.page = page;
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    var tabEl = document.getElementById('tab-' + page);
+    if (tabEl) tabEl.classList.add('active');
+    var scrollEl = document.getElementById('scroll-area');
+    if (scrollEl) scrollEl.scrollTop = 0;
+    renderPage();
+  } catch(err) {
+    console.error('navigate error (' + page + '):', err);
+    _showGlobalError('navigate(' + page + '): ' + err.message);
+  }
+}
+
+function _showGlobalError(msg) {
+  var el = document.getElementById('page-hjem') || document.body;
+  el.style.display = 'block';
+  el.innerHTML =
+    '<div style="padding:24px;background:#FAE9E7;border:1px solid #C0392B;border-radius:10px;margin:16px;color:#7B1F1A;font-family:sans-serif;">' +
+    '<strong>App-feil:</strong><br><pre style="white-space:pre-wrap;font-size:12px;margin-top:8px;">' + msg + '</pre>' +
+    '<button onclick="localStorage.clear();location.reload()" style="margin-top:14px;padding:8px 16px;border-radius:6px;border:none;background:#C0392B;color:white;cursor:pointer;font-size:13px;">Tilbakestill app</button>' +
+    '</div>';
 }
 
 function renderPage() {
-  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-  const el = document.getElementById('page-' + APP.page);
-  el.style.display = 'block';
-  if (APP.page === 'hjem') renderHjem();
-  else if (APP.page === 'juridisk') renderJuridisk();
-  else if (APP.page === 'renovering') renderRenovering();
-  else renderInnstillinger();
-  updateOverdueDot();
-  updateRenoveringDot();
+  try {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    const el = document.getElementById('page-' + APP.page);
+    if (!el) throw new Error('Mangler side-element: #page-' + APP.page);
+    el.style.display = 'block';
+    if (APP.page === 'hjem') renderHjem();
+    else if (APP.page === 'juridisk') renderJuridisk();
+    else if (APP.page === 'renovering') renderRenovering();
+    else renderInnstillinger();
+    updateOverdueDot();
+    updateRenoveringDot();
+  } catch(err) {
+    console.error('renderPage error:', err);
+    _showGlobalError('renderPage: ' + err.message + '\n' + (err.stack || ''));
+  }
 }
 
 /* ════════════════════════════════════════
