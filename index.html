@@ -2337,7 +2337,6 @@ input, select { font-family: var(--sans); }
       <span class="version-chip">v0.1.0</span>
     </div>
     <div class="topbar-right">
-      <div class="ha-indicator" id="ha-dot" title="Home Assistant status"></div>
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Bytt mellom lyst og mørkt tema">
         <i class="ti ti-moon" id="theme-icon"></i>
         <span id="theme-label" style="font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--ink3);"></span>
@@ -3325,7 +3324,7 @@ function renderTaskCard(task) {
   var ytBtn = task.yt
     ? '<a href="' + ytUrl(ytQuery) + '" target="_blank" class="act-btn act-yt" onclick="event.stopPropagation()"><i class="ti ti-brand-youtube"></i>' + s('guide') + '</a><div class="divider"></div>'
     : '';
-  var haBtn = '<button class="act-btn act-ha" onclick="event.stopPropagation();haAction(' + task.id + ')"><i class="ti ti-smart-home"></i>' + s('sendHA') + '</button>';
+  var haBtn = '';
   var angreBtn = task.lastDone
     ? '<div class="divider"></div><button class="act-btn" style="color:var(--ink3);" onclick="event.stopPropagation();undoTask(' + task.id + ')" title="' + s('angre') + '"><i class="ti ti-arrow-back-up"></i>' + s('angre') + '</button>'
     : '';
@@ -3373,26 +3372,6 @@ function renderTaskCard(task) {
    RENDER: INNSTILLINGER
 ════════════════════════════════════════ */
 function renderInnstillinger() {
-  const haBadge = APP.haConnected
-    ? '<span class="conn-chip ok">' + t('haConnChip') + '</span>'
-    : '<span class="conn-chip idle">' + t('haIdleChip') + '</span>';
-
-  const haBody = APP.haConnected ? `
-    <div class="sub-label">
-      <i class="ti ti-radar"></i>Sensorer
-      <button class="sub-action" onclick="refreshSensors()"><i class="ti ti-refresh"></i> Oppdater</button>
-    </div>
-    <div class="sensor-grid" id="sensor-grid"><div style="font-size:12px;color:var(--ink3)">Laster sensorer…</div></div>
-    <div class="sub-label" style="margin-top:16px;"><i class="ti ti-bolt"></i>Automatiseringer</div>
-    <div class="auto-list">
-      ${AUTOMATIONS.map(a => `
-        <div class="auto-item">
-          <i class="ti ${a.icon}"></i>
-          <div class="auto-texts"><div class="auto-name">${a.name}</div><div class="auto-sub">${a.desc}</div></div>
-          <button class="toggle-btn ${APP.autoStates[a.id]?'on':'off'}" onclick="toggleAuto('${a.id}',this)"></button>
-        </div>`).join('')}
-    </div>` : '';
-
   const boligGrid = ['leilighet', 'rekkehus', 'enebolig', 'sommerhytte', 'vinterhytte'].map(type => {
     const icons = { leilighet: 'ti-building', rekkehus: 'ti-buildings', enebolig: 'ti-home-2', sommerhytte: 'ti-beach', vinterhytte: 'ti-snowflake' };
     const names = { leilighet: 'Leilighet', rekkehus: 'Rekkehus', enebolig: 'Enebolig', sommerhytte: 'Sommerhytte', vinterhytte: 'Vinterhytte' };
@@ -3569,33 +3548,6 @@ function renderInnstillinger() {
       <div style="padding:16px;">
         <div class="bolig-grid" style="margin-bottom:0;">${boligGrid}</div>
         <p style="font-size:12px;color:var(--ink3);margin-top:10px;line-height:1.5;">${getBOLIGINFO()[APP.boligtype]}</p>
-      </div>
-    </div>
-
-    <!-- HOME ASSISTANT -->
-    <div class="settings-section-label">Integrasjoner</div>
-    <div class="settings-card">
-      <div class="settings-hdr" onclick="toggleSettingsCard('ha')">
-        <div class="settings-hdr-left">
-          <div class="settings-hdr-title"><i class="ti ti-smart-home" style="color:var(--ha);"></i>Home Assistant ${haBadge}</div>
-          <div class="settings-hdr-sub">Sensorer, todo-liste og automatiseringer</div>
-        </div>
-        <i class="ti ti-chevron-down settings-caret${APP.settingsOpen.ha?' open':''}" id="caret-ha"></i>
-      </div>
-      <div class="settings-body${APP.settingsOpen.ha?'':' hidden'}" id="sbody-ha">
-        <div class="form-row">
-          <div class="form-field" style="flex:2;"><label>Home Assistant URL</label><input id="ha-url" type="text" value="${APP.haUrl}" placeholder="http://homeassistant.local:8123"/></div>
-          <div class="form-field" style="flex:2;"><label>Long-lived access token</label><input id="ha-token" type="password" value="${APP.haToken}" placeholder="eyJ0eXAiOiJKV1Qi..."/></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-primary" onclick="connectHA()"><i class="ti ti-plug"></i>${APP.haConnected ? t('haReConnBtn') : t('haConnBtn')}</button>
-          ${APP.haConnected ? '<button class="btn-secondary" onclick="disconnectHA()"><i class="ti ti-plug-x"></i>Koble fra</button>' : ''}
-        </div>
-        <div class="ha-status-row" id="ha-status">
-          <div class="status-dot ${APP.haConnected?'sd-ok':'sd-idle'}"></div>
-          <span>${APP.haConnected ? t('haConnected_status') : t('haNotConnected_status')}</span>
-        </div>
-        ${haBody}
       </div>
     </div>
 
@@ -3803,8 +3755,6 @@ function renderInnstillinger() {
       </div>
     </div>`;
 
-  if (APP.haConnected) refreshSensors();
-  updateHADot();
   if (APP.activeAddr) setTimeout(function() {
     loadEntityDocs(APP.activeAddr, 'addr-docs-' + APP.activeAddr);
   }, 0);
