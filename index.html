@@ -3231,7 +3231,7 @@ function setType(type) {
 /* ════════════════════════════════════════
    RENDER: HJEM
 ════════════════════════════════════════ */
-function renderHjem() {
+function renderHjem() { try {
   const overdue = APP.tasks.filter(t => !t.done && t.due < TODAY).length;
   const soon    = APP.tasks.filter(t => !t.done && t.due >= TODAY && Math.floor((t.due - TODAY) / 864e5) <= 14).length;
   const done    = APP.tasks.filter(t => t.done).length;
@@ -3343,6 +3343,15 @@ function renderHjem() {
       '<div class="filter-bar">' + filterBtns + '</div>' +
       '<div class="task-list">' + taskCards + '</div>' +
     '</div>';
+  } catch(err) {
+    console.error('renderHjem error:', err);
+    var el = document.getElementById('page-hjem');
+    if (el) el.innerHTML =
+      '<div style="padding:24px;background:var(--red-soft);border:1px solid var(--red);border-radius:var(--r);margin:16px;color:var(--red);">' +
+      '<strong>Feil ved lasting av hjemside:</strong><br>' + err.message +
+      '<br><br><button onclick="localStorage.clear();location.reload()" style="margin-top:12px;padding:8px 16px;border-radius:6px;border:none;background:var(--red);color:white;cursor:pointer;">Tilbakestill app</button>' +
+      '</div>';
+  }
 }
 
 function renderTaskCard(task) {
