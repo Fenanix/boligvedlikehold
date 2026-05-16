@@ -3147,46 +3147,23 @@ function showToast(msg, ok = true) {
    NAVIGATION
 ════════════════════════════════════════ */
 function navigate(page) {
-  try {
-    APP.page = page;
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    var tabEl = document.getElementById('tab-' + page);
-    if (tabEl) tabEl.classList.add('active');
-    var scrollEl = document.getElementById('scroll-area');
-    if (scrollEl) scrollEl.scrollTop = 0;
-    renderPage();
-  } catch(err) {
-    console.error('navigate error (' + page + '):', err);
-    _showGlobalError('navigate(' + page + '): ' + err.message);
-  }
-}
-
-function _showGlobalError(msg) {
-  var el = document.getElementById('page-hjem') || document.body;
-  el.style.display = 'block';
-  el.innerHTML =
-    '<div style="padding:24px;background:#FAE9E7;border:1px solid #C0392B;border-radius:10px;margin:16px;color:#7B1F1A;font-family:sans-serif;">' +
-    '<strong>App-feil:</strong><br><pre style="white-space:pre-wrap;font-size:12px;margin-top:8px;">' + msg + '</pre>' +
-    '<button onclick="localStorage.clear();location.reload()" style="margin-top:14px;padding:8px 16px;border-radius:6px;border:none;background:#C0392B;color:white;cursor:pointer;font-size:13px;">Tilbakestill app</button>' +
-    '</div>';
+  APP.page = page;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + page).classList.add('active');
+  document.getElementById('scroll-area').scrollTop = 0;
+  renderPage();
 }
 
 function renderPage() {
-  try {
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    const el = document.getElementById('page-' + APP.page);
-    if (!el) throw new Error('Mangler side-element: #page-' + APP.page);
-    el.style.display = 'block';
-    if (APP.page === 'hjem') renderHjem();
-    else if (APP.page === 'juridisk') renderJuridisk();
-    else if (APP.page === 'renovering') renderRenovering();
-    else renderInnstillinger();
-    updateOverdueDot();
-    updateRenoveringDot();
-  } catch(err) {
-    console.error('renderPage error:', err);
-    _showGlobalError('renderPage: ' + err.message + '\n' + (err.stack || ''));
-  }
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  const el = document.getElementById('page-' + APP.page);
+  el.style.display = 'block';
+  if (APP.page === 'hjem') renderHjem();
+  else if (APP.page === 'juridisk') renderJuridisk();
+  else if (APP.page === 'renovering') renderRenovering();
+  else renderInnstillinger();
+  updateOverdueDot();
+  updateRenoveringDot();
 }
 
 /* ════════════════════════════════════════
@@ -3208,13 +3185,12 @@ function getDueInfo(t) {
   if (t.months && t.months.length) {
     var cm = TODAY.getMonth() + 1;
     var inSeason = t.months.indexOf(cm) !== -1;
-    var diff = Math.floor((t.due - TODAY) / 864e5);
+    var sDiff = Math.floor((t.due - TODAY) / 864e5);
     if (inSeason && !t.done) {
       return { label: MONTH_NO_FULL[cm - 1] + ' – gjør nå!', cls: 'soon', isOv: false, isSn: true };
     }
-    if (!t.done && diff < 0) {
-      // Past the month without doing it
-      return { label: Math.abs(diff) + ' dager forfalt', cls: 'overdue', isOv: true, isSn: false };
+    if (!t.done && sDiff < 0) {
+      return { label: Math.abs(sDiff) + ' dager forfalt', cls: 'overdue', isOv: true, isSn: false };
     }
     // Show the next target months as names
     var monthNames = t.months.map(function(m) { return MONTH_NO_FULL[m - 1]; }).join(' / ');
@@ -3254,7 +3230,7 @@ function setType(type) {
 /* ════════════════════════════════════════
    RENDER: HJEM
 ════════════════════════════════════════ */
-function renderHjem() { try {
+function renderHjem() {
   const overdue = APP.tasks.filter(t => !t.done && t.due < TODAY).length;
   const soon    = APP.tasks.filter(t => !t.done && t.due >= TODAY && Math.floor((t.due - TODAY) / 864e5) <= 14).length;
   const done    = APP.tasks.filter(t => t.done).length;
@@ -3366,15 +3342,6 @@ function renderHjem() { try {
       '<div class="filter-bar">' + filterBtns + '</div>' +
       '<div class="task-list">' + taskCards + '</div>' +
     '</div>';
-  } catch(err) {
-    console.error('renderHjem error:', err);
-    var el = document.getElementById('page-hjem');
-    if (el) el.innerHTML =
-      '<div style="padding:24px;background:var(--red-soft);border:1px solid var(--red);border-radius:var(--r);margin:16px;color:var(--red);">' +
-      '<strong>Feil ved lasting av hjemside:</strong><br>' + err.message +
-      '<br><br><button onclick="localStorage.clear();location.reload()" style="margin-top:12px;padding:8px 16px;border-radius:6px;border:none;background:var(--red);color:white;cursor:pointer;">Tilbakestill app</button>' +
-      '</div>';
-  }
 }
 
 function renderTaskCard(task) {
@@ -8260,7 +8227,6 @@ function openDocViewer(id) {
   updateNavLabels();
 
   function bootPhase2() {
-    try {
       APP.addresses = loadAddresses();
       const profile = loadProfile();
 
@@ -8290,10 +8256,6 @@ function openDocViewer(id) {
         updateNavLabels();
         if (!profile) openSurvey();
       }
-    } catch(err) {
-      console.error('bootPhase2 error:', err);
-      _showGlobalError('bootPhase2: ' + err.message + '\n' + (err.stack || ''));
-    }
   }
 
   // First launch: no saved locale → show language picker
