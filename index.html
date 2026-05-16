@@ -1930,6 +1930,32 @@ input, select { font-family: var(--sans); }
 .verdi-card-val.pos { color: var(--green); }
 .verdi-card-val.neg { color: var(--red); }
 
+/* ── Document list ── */
+.doc-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.doc-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--warm-white); border: 1px solid var(--paper3);
+  border-radius: var(--r-sm); padding: 8px 10px;
+}
+.doc-icon-box {
+  width: 36px; height: 36px; border-radius: var(--r-sm); flex-shrink: 0;
+  background: var(--paper2); display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--ink3);
+}
+.doc-thumb {
+  width: 36px; height: 36px; border-radius: var(--r-sm); overflow: hidden;
+  flex-shrink: 0; cursor: pointer;
+}
+.doc-name { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-meta { font-size: 11px; color: var(--ink3); margin-top: 1px; }
+.doc-add-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 6px 12px; border-radius: var(--r-sm);
+  border: 1.5px dashed var(--paper4); background: transparent; color: var(--ink3);
+  cursor: pointer; transition: border-color .12s, color .12s;
+}
+.doc-add-btn:hover { border-color: var(--ink3); color: var(--ink2); }
+
 /* ── Report scanner ── */
 .scan-dropzone {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -3481,6 +3507,21 @@ function renderInnstillinger() {
       </div>`;
     })()}
 
+    <!-- BOLIGDOKUMENTER -->
+    ${APP.activeAddr ? `
+    <div class="settings-section-label"><i class="ti ti-folder" style="margin-right:5px;"></i>Boligdokumenter</div>
+    <div class="settings-card">
+      <div style="padding:14px 16px;">
+        <p style="font-size:12px;color:var(--ink3);margin-bottom:10px;">Kjøpekontrakt, tilstandsrapport, forsikringsbevis, garantier og andre viktige dokumenter.</p>
+        <div id="addr-docs-${APP.activeAddr}"></div>
+        <input type="file" id="addr-doc-inp" accept="image/*,application/pdf,.pdf" multiple style="display:none"
+          onchange="handleDocUpload(this,'${APP.activeAddr}','addr-docs-${APP.activeAddr}');renderInnstillinger()">
+        <button class="doc-add-btn" onclick="document.getElementById('addr-doc-inp').click()">
+          <i class="ti ti-plus"></i> Legg til dokument
+        </button>
+      </div>
+    </div>` : ''}
+
     <!-- PROFIL -->
     <div class="settings-section-label">Profil</div>
     <div class="settings-card">
@@ -3711,6 +3752,9 @@ function renderInnstillinger() {
 
   if (APP.haConnected) refreshSensors();
   updateHADot();
+  if (APP.activeAddr) setTimeout(function() {
+    loadEntityDocs(APP.activeAddr, 'addr-docs-' + APP.activeAddr);
+  }, 0);
 }
 
 /* ════════════════════════════════════════
@@ -6884,7 +6928,10 @@ function renderRenovering() {
     '<div class="ren-filter-row filter-bar" style="padding:6px 16px 8px;">' + filterPills + '</div>' +
     '<div class="project-list">' + projectCards + '</div>';
 
-  if (_projExpandId) setTimeout(function() { loadProjImgs(_projExpandId); }, 0);
+  if (_projExpandId) setTimeout(function() {
+    loadProjImgs(_projExpandId);
+    loadEntityDocs(_projExpandId, 'proj-docs-' + _projExpandId);
+  }, 0);
 }
 
 function renderProjectCard(proj) {
@@ -6955,6 +7002,14 @@ function renderProjectCard(proj) {
           '<div class="proj-img-section-label"><i class="ti ti-camera" style="font-size:13px;vertical-align:-1px;margin-right:4px;"></i>' + t('projPhotos') + '</div>' +
           '<input type="file" id="img-inp-' + proj.id + '" accept="image/*" multiple style="display:none" onchange="handleImgUpload(this,\'' + proj.id + '\')">' +
           '<div class="proj-img-grid" id="proj-imgs-' + proj.id + '"></div>' +
+
+          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px;"><i class="ti ti-paperclip" style="font-size:12px;vertical-align:-1px;margin-right:4px;"></i>Dokumenter</div>' +
+          '<div id="proj-docs-' + proj.id + '"></div>' +
+          '<input type="file" id="doc-inp-' + proj.id + '" accept="image/*,application/pdf,.pdf" multiple style="display:none" onchange="handleDocUpload(this,\'' + proj.id + '\',\'proj-docs-' + proj.id + '\')">' +
+          '<button class="doc-add-btn" style="margin-bottom:14px;" onclick="document.getElementById(\'doc-inp-' + proj.id + '\').click()">' +
+            '<i class="ti ti-plus"></i> Kvittering, garanti eller PDF' +
+          '</button>' +
+
           '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px;">' + t('projStatusLabel') + '</div>' +
           '<div class="cat-picker-row" style="margin-bottom:12px;">' + statusBtns + '</div>' +
           '<div class="project-actions">' +
@@ -7504,6 +7559,124 @@ function closeImgViewer() {
     var imgEl = document.getElementById('img-viewer-img');
     if (imgEl) imgEl.src = '';
   }, 200);
+}
+
+/* ════════════════════════════════════════
+   DOCUMENT STORAGE  (IndexedDB: bv_docs_v1)
+════════════════════════════════════════ */
+var _docDB = null;
+function openDocDB() {
+  if (_docDB) return Promise.resolve(_docDB);
+  return new Promise(function(resolve, reject) {
+    var req = indexedDB.open('bv_docs_v1', 1);
+    req.onupgradeneeded = function(e) {
+      var store = e.target.result.createObjectStore('docs', { keyPath: 'id', autoIncrement: true });
+      store.createIndex('entityId', 'entityId', { unique: false });
+    };
+    req.onsuccess = function(e) { _docDB = e.target.result; resolve(_docDB); };
+    req.onerror   = function(e) { reject(e.target.error); };
+  });
+}
+function saveDoc(entityId, name, dataUrl, mimeType) {
+  return openDocDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction('docs', 'readwrite');
+      tx.objectStore('docs').add({ entityId: entityId, name: name, dataUrl: dataUrl, mimeType: mimeType, at: new Date().toISOString() });
+      tx.oncomplete = resolve;
+      tx.onerror = function(e) { reject(e.target.error); };
+    });
+  });
+}
+function getDocs(entityId) {
+  return openDocDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var req = db.transaction('docs', 'readonly').objectStore('docs').index('entityId').getAll(entityId);
+      req.onsuccess = function() { resolve(req.result || []); };
+      req.onerror   = function(e) { reject(e.target.error); };
+    });
+  });
+}
+function delDoc(id) {
+  return openDocDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction('docs', 'readwrite');
+      tx.objectStore('docs').delete(Number(id));
+      tx.oncomplete = resolve;
+      tx.onerror = function(e) { reject(e.target.error); };
+    });
+  });
+}
+
+function handleDocUpload(input, entityId, containerId) {
+  var files = Array.from(input.files || []);
+  input.value = '';
+  if (!files.length) return;
+  Promise.all(files.map(function(f) {
+    if (f.type.startsWith('image/')) {
+      return compressImg(f).then(function(dataUrl) { return saveDoc(entityId, f.name, dataUrl, f.type); });
+    }
+    return new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = function(e) { saveDoc(entityId, f.name, e.target.result, f.type).then(resolve); };
+      reader.readAsDataURL(f);
+    });
+  })).then(function() { loadEntityDocs(entityId, containerId); });
+}
+
+function loadEntityDocs(entityId, containerId) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  getDocs(entityId).then(function(docs) {
+    if (!docs.length) { container.innerHTML = ''; return; }
+    var items = docs.map(function(doc) {
+      var isImg = doc.mimeType && doc.mimeType.startsWith('image/');
+      var icon  = doc.mimeType === 'application/pdf' ? 'ti-file-type-pdf' : isImg ? 'ti-photo' : 'ti-paperclip';
+      return '<div class="doc-item">' +
+        (isImg
+          ? '<div class="doc-thumb" onclick="openDocViewer(' + doc.id + ')"><img src="' + doc.dataUrl + '" style="width:100%;height:100%;object-fit:cover;" /></div>'
+          : '<div class="doc-icon-box"><i class="ti ' + icon + '"></i></div>'
+        ) +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="doc-name">' + (doc.name || 'Dokument') + '</div>' +
+          '<div class="doc-meta">' + fmtDate(new Date(doc.at)) + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:4px;">' +
+          (!isImg ? '<button class="act-btn" style="font-size:11px;padding:5px 8px;" onclick="downloadDoc(' + doc.id + ')"><i class="ti ti-download"></i></button>' : '') +
+          '<button class="act-btn" style="font-size:11px;padding:5px 8px;color:var(--red);" onclick="deleteEntityDoc(' + doc.id + ',\'' + entityId + '\',\'' + containerId + '\')"><i class="ti ti-trash"></i></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    container.innerHTML = '<div class="doc-list">' + items + '</div>';
+  });
+}
+
+function deleteEntityDoc(id, entityId, containerId) {
+  delDoc(id).then(function() { loadEntityDocs(entityId, containerId); });
+}
+
+function downloadDoc(id) {
+  openDocDB().then(function(db) {
+    var req = db.transaction('docs', 'readonly').objectStore('docs').get(Number(id));
+    req.onsuccess = function() {
+      if (!req.result) return;
+      var a = document.createElement('a');
+      a.href     = req.result.dataUrl;
+      a.download = req.result.name || 'dokument';
+      a.click();
+    };
+  });
+}
+
+function openDocViewer(id) {
+  openDocDB().then(function(db) {
+    var req = db.transaction('docs', 'readonly').objectStore('docs').get(Number(id));
+    req.onsuccess = function() {
+      if (!req.result) return;
+      var el    = document.getElementById('img-viewer');
+      var imgEl = document.getElementById('img-viewer-img');
+      if (el && imgEl) { imgEl.src = req.result.dataUrl; el.classList.add('open'); }
+    };
+  });
 }
 
 /* ════════════════════════════════════════
