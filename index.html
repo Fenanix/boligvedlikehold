@@ -3514,25 +3514,20 @@ function renderInnstillinger() {
           </div>
           ${(function() {
             var locality = addr.postalPlace || addr.cityName || '';
-            var pnr      = addr.postalCode  || '';
             var gBase    = 'https://www.google.com/search?q=';
             var links = [
               {
                 icon:  'ti-home-search',
                 label: 'Finn lokal eiendomsmegler' + (locality ? ' i ' + locality : ''),
-                href:  pnr
-                  ? 'https://www.nef.no/finn-megler/?postnummer=' + encodeURIComponent(pnr)
-                  : gBase + encodeURIComponent('eiendomsmegler' + (locality ? ' ' + locality : '')),
-                sub:   pnr ? 'nef.no – Norges Eiendomsmeglerforbund' : 'Google-søk',
+                href:  gBase + encodeURIComponent('eiendomsmegler' + (locality ? ' ' + locality : '')),
+                sub:   'Google-søk',
                 color: 'var(--blue)',
               },
               {
                 icon:  'ti-clipboard-list',
                 label: 'Finn lokal takstmann' + (locality ? ' i ' + locality : ''),
-                href:  pnr
-                  ? 'https://www.nitotakst.no/finn-takstmann/?postnummer=' + encodeURIComponent(pnr)
-                  : gBase + encodeURIComponent('takstmann' + (locality ? ' ' + locality : '')),
-                sub:   pnr ? 'nitotakst.no – NITO Takst' : 'Google-søk',
+                href:  gBase + encodeURIComponent('takstmann' + (locality ? ' ' + locality : '')),
+                sub:   'Google-søk',
                 color: 'var(--green)',
               },
               {
