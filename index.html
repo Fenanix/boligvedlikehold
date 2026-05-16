@@ -1499,6 +1499,12 @@ input, select { font-family: var(--sans); }
   background: var(--paper3);
   color: var(--ink3);
 }
+.member-row-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 20px;
+  letter-spacing: .02em;
+}
 
 /* Assign picker dropdown */
 .assign-picker {
@@ -3170,9 +3176,14 @@ function renderHjem() {
   const cats = [...new Set(APP.tasks.map(t => t.cat))];
 
   let visible = [...APP.tasks];
-  if (APP.filter === 'overdue')      visible = visible.filter(t => !t.done && t.due < TODAY);
-  else if (APP.filter === 'fagfolk') visible = visible.filter(t => t.fagfolk);
-  else if (APP.filter !== 'all')     visible = visible.filter(t => t.cat === APP.filter);
+  if (APP.filter === 'overdue')           visible = visible.filter(t => !t.done && t.due < TODAY);
+  else if (APP.filter === 'fagfolk')      visible = visible.filter(t => t.fagfolk);
+  else if (APP.filter.startsWith('member:')) {
+    var _mid = APP.filter.slice(7);
+    var _asgn = getAssignments();
+    visible = visible.filter(t => _asgn[t.id] === _mid);
+  }
+  else if (APP.filter !== 'all')          visible = visible.filter(t => t.cat === APP.filter);
   visible.sort((a, b) => urgency(a) - urgency(b));
 
   // Address dropdown
@@ -3207,10 +3218,19 @@ function renderHjem() {
         '</button>' +
       '</div>';
 
+  var _members = getMembers();
+  var memberPills = _members.map(function(m) {
+    var fid   = 'member:' + m.id;
+    var label = m.isMe ? '<i class="ti ti-user" style="font-size:12px;"></i> Mine' : '<span style="width:7px;height:7px;border-radius:50%;background:' + m.color + ';display:inline-block;"></span> ' + m.name;
+    var isActive = APP.filter === fid;
+    return '<button class="pill' + (isActive ? ' active' : '') + '" style="' + (!isActive ? 'border-color:' + m.color + ';color:' + m.color + ';' : '') + '" onclick="setFilter(\'' + fid + '\',this)">' + label + '</button>';
+  }).join('');
+
   var filterBtns =
     '<button class="pill' + (APP.filter==='all'?' active':'') + '" onclick="setFilter(\'all\',this)">' + t('allTasks') + '</button>' +
     '<button class="pill' + (APP.filter==='overdue'?' active':'') + '" onclick="setFilter(\'overdue\',this)">' + t('overdue') + '</button>' +
     '<button class="pill' + (APP.filter==='fagfolk'?' active':'') + '" onclick="setFilter(\'fagfolk\',this)"><i class="ti ti-hard-hat"></i> ' + t('fagfolk') + '</button>' +
+    memberPills +
     cats.map(function(c) {
       return '<button class="pill' + (APP.filter===c?' active':'') + '" onclick="setFilter(\'' + c + '\',this)"><i class="ti ' + CAT_ICON[c] + '"></i> ' + CAT_LABEL[c] + '</button>';
     }).join('');
@@ -3354,6 +3374,7 @@ function renderTaskCard(task) {
         '<div class="task-meta">' +
           '<span class="cat-badge cat-' + task.cat + '">' + CAT_LABEL[task.cat] + '</span>' +
           '<span class="due-text ' + cls + '"><i class="ti ti-calendar"></i> ' + label + '</span>' +
+          (assignedMember ? '<span class="member-row-badge" style="background:' + assignedMember.color + '22;color:' + assignedMember.color + ';">' + memberInitials(assignedMember.name) + (assignedMember.isMe ? ' · Meg' : ' · ' + assignedMember.name) + '</span>' : '') +
           (lastDoneHtml || nextLabel) +
         '</div>' +
       '</div>' +
