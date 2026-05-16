@@ -3128,11 +3128,12 @@ function renderPage() {
    HELPERS
 ════════════════════════════════════════ */
 function urgency(t) {
-  if (t.done) return 3;
+  if (t.done) return 4;                        // just checked off → absolute bottom
   const d = Math.floor((t.due - TODAY) / 864e5);
-  if (d < 0) return 0;
-  if (d <= 14) return 1;
-  return 2;
+  if (d < 0)   return 0;                       // overdue → top
+  if (d <= 14) return 1;                       // due within 2 weeks → near top
+  if (t.lastDone) return 3;                    // done before, future due → near bottom
+  return 2;                                    // never done, future → middle
 }
 function getDueInfo(t) {
   const diff = Math.floor((t.due - TODAY) / 864e5);
