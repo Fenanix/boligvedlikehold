@@ -2436,7 +2436,7 @@ input, select { font-family: var(--sans); }
 
       <div class="addr-field">
         <label class="addr-label" for="addr-street-input">Gateadresse</label>
-        <input class="addr-modal-input" id="addr-street-input" type="text" placeholder="F.eks. Storgata 5" autocorrect="off" autocomplete="street-address" />
+        <input class="addr-modal-input" id="addr-street-input" type="text" placeholder="F.eks. Storgata 5 H0101" autocorrect="off" autocapitalize="none" spellcheck="false" autocomplete="street-address" />
       </div>
 
       <div class="addr-field">
@@ -5585,8 +5585,10 @@ function renderSurveyStep() {
       '<div style="margin-bottom:12px;">' +
         '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
           '<input class="survey-name-input" id="survey-loc-input" type="text"' +
-            ' placeholder="By eller adresse (f.eks. Oslo, Bergen, Tromsø)"' +
-            ' value="' + locVal + '" autocomplete="off"' +
+            ' placeholder="By, sted eller adresse (f.eks. Oslo, Storgata 5 Oslo)"' +
+            ' value="' + locVal + '" autocomplete="off" autocorrect="off"' +
+            ' autocapitalize="none" spellcheck="false"' +
+            ' onkeydown="if(event.key===\'Enter\')surveySearchLocation()"' +
             ' style="flex:1;font-size:16px;" />' +
         '</div>' +
         '<div style="display:flex;gap:8px;">' +
