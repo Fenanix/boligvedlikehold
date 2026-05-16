@@ -3411,20 +3411,21 @@ function renderInnstillinger() {
     </div>
 
     <!-- DELING -->
-    <div class="settings-section-label">Deling og samarbeid</div>
+    <div class="settings-section-label">Boligdeling</div>
     <div class="settings-card" style="margin-bottom:10px;">
       <div style="padding:16px;">
         ${(function() {
-          var meta = getSyncMeta();
           var members = getMembers();
-          var code = meta && meta.binId ? binToCode(meta.binId) : null;
+          var memberTxt = members.length === 0
+            ? 'Ingen familiemedlemmer lagt til'
+            : members.length + ' familiemedlem' + (members.length !== 1 ? 'mer' : '') + ' · Eksporter/importer for å synkronisere';
           return '<div style="display:flex;align-items:center;justify-content:space-between;">' +
-            '<div>' +
-              '<div class="setting-row-label">Rom-deling</div>' +
-              '<div class="setting-row-sub">' + (code ? 'Kode: ' + code + ' · ' + members.length + ' medlem' + (members.length!==1?'mer':'') : 'Ikke aktivert') + '</div>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div class="setting-row-label">Familiemedlemmer &amp; datadeling</div>' +
+              '<div class="setting-row-sub">' + memberTxt + '</div>' +
             '</div>' +
-            '<button class="btn-secondary" style="font-size:12px;" onclick="openShareModal();renderInnstillinger()">' +
-              '<i class="ti ti-users"></i> ' + (code ? 'Administrer' : 'Sett opp') +
+            '<button class="btn-secondary" style="font-size:12px;flex-shrink:0;margin-left:10px;" onclick="openShareModal();renderInnstillinger()">' +
+              '<i class="ti ti-users"></i> ' + (members.length > 0 ? 'Administrer' : 'Sett opp') +
             '</button>' +
           '</div>';
         })()}
