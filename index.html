@@ -1,5 +1,5 @@
 <!--
-  Boligvedlikehold v0.2.6
+  Boligvedlikehold v0.2.7
   © 2025 Kim-André Hedemark Sjøgren. Alle rettigheter forbeholdt.
   Uautorisert kopiering, distribusjon eller gjenbruk av denne koden er forbudt.
   All rights reserved. Unauthorized copying, distribution or reuse is prohibited.
@@ -2336,7 +2336,7 @@ input, select { font-family: var(--sans); }
     <div class="topbar-title">
       <i class="ti ti-home"></i>
       <span id="topbar-app-name">Boligvedlikehold</span>
-      <span class="version-chip">v0.2.6</span>
+      <span class="version-chip">v0.2.7</span>
     </div>
     <div class="topbar-right">
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Bytt mellom lyst og mørkt tema">
@@ -2488,7 +2488,7 @@ input, select { font-family: var(--sans); }
    STATE
 ════════════════════════════════════════ */
 const APP = {
-  version:      '0.2.6',
+  version:      '0.2.7',
   page:         'hjem',
   boligtype:    'leilighet',
   filter:       'all',
@@ -3795,7 +3795,7 @@ function renderInnstillinger() {
       <div style="padding:16px;">
         <div class="setting-row">
           <div class="setting-row-left"><div class="setting-row-label">Versjon</div><div class="setting-row-sub">Boligvedlikehold</div></div>
-          <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.2.6</span>
+          <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.2.7</span>
         </div>
         <div class="setting-row">
           <div class="setting-row-left"><div class="setting-row-label">Oppgaver lastet</div><div class="setting-row-sub">For ${APP.boligtype}</div></div>
@@ -4139,7 +4139,7 @@ function exportGCal() {
 function exportICS() {
   const tasks = getKalTasks();
   if (!tasks.length) { showToast(t('noTasksShort'), false); return; }
-  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Boligvedlikehold v0.2.6//NO\r\n';
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Boligvedlikehold v0.2.7//NO\r\n';
   tasks.forEach(t => {
     const s = new Date(t.due); s.setHours(9, 0, 0, 0);
     const e = new Date(s);     e.setHours(10, 0, 0, 0);
