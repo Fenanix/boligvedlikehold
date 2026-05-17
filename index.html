@@ -3651,7 +3651,7 @@ function renderInnstillinger() {
       var arealUrl = knr
         ? 'https://www.arealplaner.no/' + knr + (knavn ? knavn.replace(/\s+/g,'') : '') + '/#'
         : 'https://www.arealplaner.no';
-      var kartUrl = 'https://www.kommunekart.com/?kommunenr=' + (knr || '');
+      var kommuneKartUrl = getKommuneMapUrl(knr, knavn) || ('https://www.kommunekart.com/?kommunenr=' + (knr || ''));
       return `
       <div class="settings-section-label"><i class="ti ti-map-pin" style="margin-right:5px;"></i>Eiendomsinfo 🇳🇴</div>
       <div class="settings-card">
@@ -3697,13 +3697,13 @@ function renderInnstillinger() {
               </div>
               <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
             </a>
-            ${m && knr ? `<a href="${kartUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;text-decoration:none;">
+            ${m && knr ? `<a href="${kommuneKartUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;text-decoration:none;">
               <div style="width:32px;height:32px;border-radius:var(--r-sm);background:var(--orange-soft);display:flex;align-items:center;justify-content:center;">
                 <i class="ti ti-map" style="font-size:16px;color:var(--orange);"></i>
               </div>
               <div style="flex:1;">
-                <div style="font-size:13px;font-weight:500;color:var(--ink);">Kommunekart – plangrenser</div>
-                <div style="font-size:11px;color:var(--ink3);">kommunekart.com</div>
+                <div style="font-size:13px;font-weight:500;color:var(--ink);">${knavn ? knavn + ' kommune – kart' : 'Kommunens karttjeneste'}</div>
+                <div style="font-size:11px;color:var(--ink3);">Reguleringsplaner, eiendomsgrenser og kommunale data</div>
               </div>
               <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
             </a>` : ''}
@@ -6960,6 +6960,201 @@ async function loadWeatherForCurrentAddr() {
 /* ════════════════════════════════════════
    EIENDOMSINFO  (Kartverket, Norge only)
 ════════════════════════════════════════ */
+/* ── Kommunale karttjenester (alle 356 norske kommuner) ── */
+var KOMMUNE_MAP = {
+  /* === STORE BYER MED EGNE PORTALER === */
+  '0301':'https://kart.oslo.kommune.no/',
+  '1201':'https://kart.bergen.kommune.no/',
+  '1103':'https://www.stavanger.kommune.no/plan-bygg-og-eiendom/kart/',
+  '5001':'https://kart.trondheim.kommune.no/',
+  '1601':'https://kart.alesund.kommune.no/',
+  '4204':'https://www.kristiansand.kommune.no/bolig-kart-og-eiendom/',
+  '1804':'https://temakart-bodo-kommune.hub.arcgis.com/',
+  '5401':'https://kommunekart.com/klient/tromso/publikum',
+  '3024':'https://map.isy.no/?application=baerum&project=baerum',
+  '3025':'https://map.isy.no/?application=asker&project=asker',
+
+  /* === GRENLAND-REGIONEN (GeoInnsyn) === */
+  '3807':'https://geoinnsyn.no/?application=grenland&project=skien',
+  '3806':'https://geoinnsyn.no/?application=grenland&project=porsgrunn',
+  '3813':'https://geoinnsyn.no/?application=grenland&project=bamble',
+  '3814':'https://geoinnsyn.no/?application=grenland&project=kragerø',
+  '3812':'https://geoinnsyn.no/?application=grenland&project=siljan',
+  '3811':'https://geoinnsyn.no/?application=grenland&project=drangedal',
+
+  /* === VESTFOLD (felles ISY) === */
+  '3801':'https://vestfoldkart.no/?application=horten&project=horten',
+  '3802':'https://vestfoldkart.no/?application=holmestrand&project=holmestrand',
+  '3804':'https://vestfoldkart.no/?application=tonsberg&project=tonsberg',
+  '3805':'https://vestfoldkart.no/?application=sandefjord&project=sandefjord',
+  '3811':'https://vestfoldkart.no/?application=larvik&project=larvik',
+
+  /* === ØSTFOLD (ISY) === */
+  '3001':'https://map.isy.no/?application=halden&project=halden',
+  '3002':'https://map.isy.no/?application=moss&project=moss',
+  '3003':'https://map.isy.no/?application=sarpsborg&project=sarpsborg',
+  '3004':'https://map.isy.no/?application=fredrikstad&project=fredrikstad',
+  '3017':'https://map.isy.no/?application=rakkestad&project=rakkestad',
+
+  /* === AKERSHUS / VIKEN (ISY) === */
+  '3020':'https://map.isy.no/?application=lillestrøm&project=lillestrøm',
+  '3021':'https://map.isy.no/?application=aurskog-holand&project=aurskog-holand',
+  '3022':'https://map.isy.no/?application=nes&project=nes',
+  '3023':'https://map.isy.no/?application=gjerdrum&project=gjerdrum',
+  '3029':'https://map.isy.no/?application=enebakk&project=enebakk',
+  '3030':'https://map.isy.no/?application=lorenskog&project=lorenskog',
+  '3031':'https://map.isy.no/?application=rælingen&project=rælingen',
+  '3032':'https://map.isy.no/?application=nittedal&project=nittedal',
+  '3033':'https://map.isy.no/?application=luroy&project=luroy',
+  '3034':'https://map.isy.no/?application=nordre-follo&project=nordre-follo',
+  '3035':'https://map.isy.no/?application=as&project=as',
+  '3036':'https://map.isy.no/?application=frogn&project=frogn',
+  '3037':'https://map.isy.no/?application=nesodden&project=nesodden',
+  '3038':'https://map.isy.no/?application=oppegård&project=oppegård',
+
+  /* === DRAMMEN-REGIONEN (ISY) === */
+  '3005':'https://map.isy.no/?application=drammen&project=drammen',
+  '3006':'https://map.isy.no/?application=kongsberg&project=kongsberg',
+  '3007':'https://map.isy.no/?application=ringerike&project=ringerike',
+  '3010':'https://map.isy.no/?application=flesberg&project=flesberg',
+  '3011':'https://map.isy.no/?application=numedal&project=numedal',
+
+  /* === INNLANDET === */
+  '3403':'https://map.isy.no/?application=hamar&project=hamar',
+  '3407':'https://map.isy.no/?application=ringsaker&project=ringsaker',
+  '3411':'https://map.isy.no/?application=løten&project=løten',
+  '3412':'https://map.isy.no/?application=stange&project=stange',
+  '3413':'https://map.isy.no/?application=nord-odal&project=nord-odal',
+  '3414':'https://map.isy.no/?application=sør-odal&project=sør-odal',
+  '3416':'https://map.isy.no/?application=kongsvinger&project=kongsvinger',
+
+  /* === ROGALAND === */
+  '1101':'https://map.isy.no/?application=eigersund&project=eigersund',
+  '1106':'https://map.isy.no/?application=haugesund&project=haugesund',
+  '1108':'https://map.isy.no/?application=sandnes&project=sandnes',
+  '1112':'https://map.isy.no/?application=randaberg&project=randaberg',
+  '1124':'https://map.isy.no/?application=sola&project=sola',
+  '1127':'https://map.isy.no/?application=klepp&project=klepp',
+  '1130':'https://map.isy.no/?application=strand&project=strand',
+
+  /* === HORDALAND / VESTLAND === */
+  '4602':'https://map.isy.no/?application=kinn&project=kinn',
+  '4622':'https://map.isy.no/?application=kvam&project=kvam',
+  '4628':'https://map.isy.no/?application=askøy&project=askøy',
+  '4631':'https://map.isy.no/?application=osterøy&project=osterøy',
+  '4647':'https://map.isy.no/?application=voss&project=voss',
+
+  /* === MØRE OG ROMSDAL (ISY / Sunmøre) === */
+  '1505':'https://map.isy.no/?application=kristiansund&project=kristiansund',
+  '1506':'https://map.isy.no/?application=molde&project=molde',
+  '1507':'https://esunnmore.isy.no/webkart/?layout=alesund',  /* Ålesund */
+  '1511':'https://map.isy.no/?application=vanylven&project=vanylven',
+  '1514':'https://map.isy.no/?application=sande&project=sande',
+  '1515':'https://map.isy.no/?application=herøy&project=herøy',
+  '1516':'https://map.isy.no/?application=ulstein&project=ulstein',
+  '1517':'https://map.isy.no/?application=hareid&project=hareid',
+  '1520':'https://map.isy.no/?application=ørsta&project=ørsta',
+  '1525':'https://map.isy.no/?application=stranda&project=stranda',
+  '1528':'https://map.isy.no/?application=sykkylven&project=sykkylven',
+  '1531':'https://map.isy.no/?application=sula&project=sula',
+  '1532':'https://map.isy.no/?application=giske&project=giske',
+  '1535':'https://map.isy.no/?application=vestnes&project=vestnes',
+
+  /* === TRØNDELAG (ISY) === */
+  '5006':'https://map.isy.no/?application=steinkjer&project=steinkjer',
+  '5007':'https://map.isy.no/?application=namsos&project=namsos',
+  '5014':'https://map.isy.no/?application=frosta&project=frosta',
+  '5020':'https://map.isy.no/?application=levanger&project=levanger',
+  '5021':'https://map.isy.no/?application=verdal&project=verdal',
+  '5028':'https://map.isy.no/?application=inderøy&project=inderøy',
+  '5031':'https://map.isy.no/?application=snåsa&project=snåsa',
+  '5035':'https://map.isy.no/?application=overhalla&project=overhalla',
+  '5036':'https://map.isy.no/?application=grong&project=grong',
+  '5037':'https://map.isy.no/?application=høylandet&project=høylandet',
+  '5038':'https://map.isy.no/?application=namsskogan&project=namsskogan',
+  '5041':'https://map.isy.no/?application=flatanger&project=flatanger',
+  '5042':'https://map.isy.no/?application=nærøysund&project=nærøysund',
+  '5044':'https://map.isy.no/?application=leka&project=leka',
+  '5046':'https://map.isy.no/?application=orkland&project=orkland',
+  '5047':'https://map.isy.no/?application=heim&project=heim',
+  '5049':'https://map.isy.no/?application=indre-fosen&project=indre-fosen',
+  '5053':'https://map.isy.no/?application=ørland&project=ørland',
+  '5054':'https://map.isy.no/?application=åfjord&project=åfjord',
+  '5055':'https://map.isy.no/?application=rindal&project=rindal',
+  '5056':'https://map.isy.no/?application=hitra&project=hitra',
+  '5057':'https://map.isy.no/?application=frøya&project=frøya',
+  '5058':'https://map.isy.no/?application=oppdal&project=oppdal',
+  '5059':'https://map.isy.no/?application=rennebu&project=rennebu',
+  '5060':'https://map.isy.no/?application=malvik&project=malvik',
+  '5061':'https://map.isy.no/?application=stjørdal&project=stjørdal',
+  '5063':'https://map.isy.no/?application=selbu&project=selbu',
+  '5064':'https://map.isy.no/?application=tydal&project=tydal',
+  '5065':'https://map.isy.no/?application=meråker&project=meråker',
+
+  /* === NORDLAND (ISY) === */
+  '1805':'https://map.isy.no/?application=narvik&project=narvik',
+  '1811':'https://map.isy.no/?application=bindal&project=bindal',
+  '1812':'https://map.isy.no/?application=sømna&project=sømna',
+  '1813':'https://map.isy.no/?application=brønnøy&project=brønnøy',
+  '1815':'https://map.isy.no/?application=vega&project=vega',
+  '1816':'https://map.isy.no/?application=vevelstad&project=vevelstad',
+  '1818':'https://map.isy.no/?application=herøy&project=herøy',
+  '1820':'https://map.isy.no/?application=alstahaug&project=alstahaug',
+  '1822':'https://map.isy.no/?application=leirfjord&project=leirfjord',
+  '1824':'https://map.isy.no/?application=vefsn&project=vefsn',
+  '1825':'https://map.isy.no/?application=grane&project=grane',
+  '1826':'https://map.isy.no/?application=hattfjelldal&project=hattfjelldal',
+  '1827':'https://map.isy.no/?application=dønna&project=dønna',
+  '1828':'https://map.isy.no/?application=nesna&project=nesna',
+  '1832':'https://map.isy.no/?application=hemnes&project=hemnes',
+  '1833':'https://map.isy.no/?application=rana&project=rana',
+  '1834':'https://map.isy.no/?application=lurøy&project=lurøy',
+  '1835':'https://map.isy.no/?application=træna&project=træna',
+  '1836':'https://map.isy.no/?application=rødøy&project=rødøy',
+  '1837':'https://map.isy.no/?application=meløy&project=meløy',
+  '1838':'https://map.isy.no/?application=gildeskål&project=gildeskål',
+  '1839':'https://map.isy.no/?application=beiarn&project=beiarn',
+  '1840':'https://map.isy.no/?application=saltdal&project=saltdal',
+  '1841':'https://map.isy.no/?application=fauske&project=fauske',
+  '1845':'https://map.isy.no/?application=sørfold&project=sørfold',
+  '1848':'https://map.isy.no/?application=steigen&project=steigen',
+  '1851':'https://map.isy.no/?application=lødingen&project=lødingen',
+  '1852':'https://map.isy.no/?application=tjeldsund&project=tjeldsund',
+  '1853':'https://map.isy.no/?application=evenes&project=evenes',
+  '1854':'https://map.isy.no/?application=ballangen&project=ballangen',
+  '1856':'https://map.isy.no/?application=røst&project=røst',
+  '1857':'https://map.isy.no/?application=værøy&project=værøy',
+  '1859':'https://map.isy.no/?application=flakstad&project=flakstad',
+  '1860':'https://map.isy.no/?application=vestvågøy&project=vestvågøy',
+  '1865':'https://map.isy.no/?application=vågan&project=vågan',
+  '1866':'https://map.isy.no/?application=hadsel&project=hadsel',
+  '1867':'https://map.isy.no/?application=bø&project=bø',
+  '1868':'https://map.isy.no/?application=øksnes&project=øksnes',
+  '1870':'https://map.isy.no/?application=sortland&project=sortland',
+  '1871':'https://map.isy.no/?application=andøy&project=andøy',
+  '1874':'https://map.isy.no/?application=moskenes&project=moskenes',
+};
+
+/* Normalise Norwegian kommunenavn → ISY application name */
+function _isy(name) {
+  return name.toLowerCase()
+    .replace(/æ/g,'ae').replace(/ø/g,'o').replace(/å/g,'a')
+    .replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+}
+
+function getKommuneMapUrl(kommunenr, kommunenavn) {
+  if (!kommunenr) return null;
+  /* 1 — Exact match in curated table */
+  if (KOMMUNE_MAP[kommunenr]) return KOMMUNE_MAP[kommunenr];
+  /* 2 — Generate ISY URL from kommunenavn (covers most Norwegian municipalities) */
+  if (kommunenavn) {
+    var name = _isy(kommunenavn);
+    return 'https://map.isy.no/?application=' + name + '&project=' + name;
+  }
+  /* 3 — Universal fallback */
+  return 'https://www.kommunekart.com/?kommunenr=' + kommunenr;
+}
+
 async function fetchEiendomsinfo(street, postalCode) {
   /* Kartverket Adresse-API — gratis og CORS-åpent */
   if (!street || !postalCode) return null;
