@@ -1,5 +1,5 @@
 <!--
-  Boligvedlikehold v0.3.1
+  Boligvedlikehold v0.3.2
   © 2025 Kim-André Hedemark Sjøgren. Alle rettigheter forbeholdt.
   Uautorisert kopiering, distribusjon eller gjenbruk av denne koden er forbudt.
   All rights reserved. Unauthorized copying, distribution or reuse is prohibited.
@@ -2368,7 +2368,7 @@ input, select { font-family: var(--sans); }
     <div class="topbar-title">
       <i class="ti ti-home"></i>
       <span id="topbar-app-name">Boligvedlikehold</span>
-      <span class="version-chip">v0.3.1</span>
+      <span class="version-chip">v0.3.2</span>
     </div>
     <div class="topbar-right">
       <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Bytt mellom lyst og mørkt tema">
@@ -2520,7 +2520,7 @@ input, select { font-family: var(--sans); }
    STATE
 ════════════════════════════════════════ */
 const APP = {
-  version:      '0.3.1',
+  version:      '0.3.2',
   page:         'hjem',
   boligtype:    'leilighet',
   filter:       'all',
@@ -3948,7 +3948,7 @@ function renderInnstillinger() {
       <div style="padding:16px;">
         <div class="setting-row">
           <div class="setting-row-left"><div class="setting-row-label">Versjon</div><div class="setting-row-sub">Boligvedlikehold</div></div>
-          <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.3.1</span>
+          <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.3.2</span>
         </div>
         <div class="setting-row">
           <div class="setting-row-left"><div class="setting-row-label">Oppgaver lastet</div><div class="setting-row-sub">For ${APP.boligtype}</div></div>
@@ -4341,7 +4341,7 @@ function exportGCal() {
 function exportICS() {
   const tasks = getKalTasks();
   if (!tasks.length) { showToast(t('noTasksShort'), false); return; }
-  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Boligvedlikehold v0.3.1//NO\r\n';
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Boligvedlikehold v0.3.2//NO\r\n';
   tasks.forEach(t => {
     const s = new Date(t.due); s.setHours(9, 0, 0, 0);
     const e = new Date(s);     e.setHours(10, 0, 0, 0);
@@ -6971,6 +6971,10 @@ var KOMMUNE_MAP = {
   '4204':'https://www.kristiansand.kommune.no/bolig-kart-og-eiendom/',
   '1804':'https://temakart-bodo-kommune.hub.arcgis.com/',
   '5401':'https://kommunekart.com/klient/tromso/publikum',
+  /* 2024-numre (Akershus gjenopprettet) */
+  '3201':'https://map.isy.no/?application=baerum&project=baerum',
+  '3202':'https://map.isy.no/?application=asker&project=asker',
+  /* Gamle Viken-numre */
   '3024':'https://map.isy.no/?application=baerum&project=baerum',
   '3025':'https://map.isy.no/?application=asker&project=asker',
 
@@ -7012,12 +7016,14 @@ var KOMMUNE_MAP = {
   '3037':'https://map.isy.no/?application=nesodden&project=nesodden',
   '3038':'https://map.isy.no/?application=oppegård&project=oppegård',
 
-  /* === DRAMMEN-REGIONEN (ISY) === */
+  /* === DRAMMEN-REGIONEN (ISY) — 2024-numre (Buskerud gjenopprettet) === */
+  '3301':'https://map.isy.no/?application=drammen&project=drammen',
+  '3302':'https://map.isy.no/?application=kongsberg&project=kongsberg',
+  '3303':'https://map.isy.no/?application=ringerike&project=ringerike',
+  /* Gamle Viken-numre som fallback */
   '3005':'https://map.isy.no/?application=drammen&project=drammen',
   '3006':'https://map.isy.no/?application=kongsberg&project=kongsberg',
   '3007':'https://map.isy.no/?application=ringerike&project=ringerike',
-  '3010':'https://map.isy.no/?application=flesberg&project=flesberg',
-  '3011':'https://map.isy.no/?application=numedal&project=numedal',
 
   /* === INNLANDET === */
   '3403':'https://map.isy.no/?application=hamar&project=hamar',
