@@ -3376,7 +3376,7 @@ function renderHjem() {
             '<div class="score-sub">' + bs.tip + '</div>' +
           '</div>' +
           '<div style="text-align:right;flex-shrink:0;">' +
-            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);">Boligscore</div>' +
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);">' + t('bsTitle') + '</div>' +
           '</div>' +
         '</div>';
       })() +
@@ -3387,7 +3387,7 @@ function renderHjem() {
         var isDefault = _taskSort === 'default';
         return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding:6px 10px;background:var(--paper2);border-radius:var(--r);border:1px solid var(--paper3);">' +
           '<i class="ti ti-arrows-sort" style="font-size:14px;color:var(--ink3);flex-shrink:0;"></i>' +
-          '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);flex-shrink:0;">Sorter:</span>' +
+          '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);flex-shrink:0;">' + t('sortLabel') + '</span>' +
           SORT_MODES.map(function(s) {
             var active = _taskSort === s.key;
             return '<button onclick="cycleTaskSort()" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1px solid ' + (active ? 'var(--ink)' : 'transparent') + ';background:' + (active ? 'var(--ink)' : 'transparent') + ';color:' + (active ? 'var(--warm-white)' : 'var(--ink3)') + ';font-size:11.5px;font-weight:' + (active ? '700' : '500') + ';cursor:pointer;white-space:nowrap;">' +
@@ -3524,25 +3524,25 @@ function renderInnstillinger() {
   document.getElementById('page-innstillinger').innerHTML = `
     <div class="page-header">
       <h2>Innstillinger</h2>
-      <p>Tilpass appen til din bolig og dine integrasjoner</p>
+      <p>${t('sSettingsSub')}</p>
     </div>
 
     <!-- DELING -->
-    <div class="settings-section-label">Bolig-deling</div>
+    <div class="settings-section-label">${t('sSharing')}</div>
     <div class="settings-card" style="margin-bottom:10px;">
       <div style="padding:16px;">
         ${(function() {
           var members = getMembers();
           var memberTxt = members.length === 0
-            ? 'Ingen familiemedlemmer lagt til'
-            : members.length + ' familiemedlem' + (members.length !== 1 ? 'mer' : '') + ' · Eksporter/importer for å synkronisere';
+            ? t('membersNone')
+            : members.length + ' familiemedlem' + (members.length !== 1 ? 'mer' : '') + ' · ' + t('membersSync');
           return '<div style="display:flex;align-items:center;justify-content:space-between;">' +
             '<div style="flex:1;min-width:0;">' +
-              '<div class="setting-row-label">Familiemedlemmer &amp; datadeling</div>' +
+              '<div class="setting-row-label">' + t('membersSectionTitle') + '</div>' +
               '<div class="setting-row-sub">' + memberTxt + '</div>' +
             '</div>' +
             '<button class="btn-secondary" style="font-size:12px;flex-shrink:0;margin-left:10px;" onclick="openShareModal();renderInnstillinger()">' +
-              '<i class="ti ti-users"></i> ' + (members.length > 0 ? 'Administrer' : 'Sett opp') +
+              '<i class="ti ti-users"></i> ' + (members.length > 0 ? t('membersAdminister') : t('membersSetup')) +
             '</button>' +
           '</div>';
         })()}
@@ -3550,24 +3550,24 @@ function renderInnstillinger() {
     </div>
 
     <!-- ADRESSER -->
-    <div class="settings-section-label">Adresser</div>
+    <div class="settings-section-label">${t('sAddresses')}</div>
     <div class="addr-list" style="margin-bottom:10px;">
       ${APP.addresses.length === 0
-        ? '<div style="font-size:13px;color:var(--ink3);padding:12px 0;">Ingen adresser lagt til ennå.</div>'
+        ? '<div style="font-size:13px;color:var(--ink3);padding:12px 0;">' + t('addrNone') + '</div>'
         : APP.addresses.map(function(a) {
             var typeNames = { leilighet:'Leilighet', rekkehus:'Rekkehus', enebolig:'Enebolig', sommerhytte:'Sommerhytte', vinterhytte:'Vinterhytte' };
             var typeIcons = { leilighet:'ti-building', rekkehus:'ti-buildings', enebolig:'ti-home-2', sommerhytte:'ti-beach', vinterhytte:'ti-snowflake' };
             return '<div class="addr-item' + (a.id === APP.activeAddr ? ' active-addr' : '') + '">' +
               '<i class="ti ' + (typeIcons[a.boligtype]||'ti-home') + ' addr-item-icon"></i>' +
               '<div class="addr-item-text">' +
-                '<div class="addr-item-name">' + a.name + (a.id === APP.activeAddr ? ' <span style="font-size:10px;background:var(--ink);color:var(--warm-white);padding:1px 6px;border-radius:10px;font-weight:600;">Aktiv</span>' : '') + '</div>' +
+                '<div class="addr-item-name">' + a.name + (a.id === APP.activeAddr ? ' <span style="font-size:10px;background:var(--ink);color:var(--warm-white);padding:1px 6px;border-radius:10px;font-weight:600;">' + t('addrActive') + '</span>' : '') + '</div>' +
                 '<div class="addr-item-type">' + (typeNames[a.boligtype]||'') +
                   (a.street ? ' · ' + a.street : '') +
                   (a.postalCode ? ', ' + a.postalCode + (a.postalPlace ? ' ' + a.postalPlace : '') : '') +
                 '</div>' +
               '</div>' +
               '<div class="addr-item-actions">' +
-                (a.id !== APP.activeAddr ? '<button class="btn-secondary" style="font-size:12px;padding:5px 10px;" onclick="switchAddress(\'' + a.id + '\');renderPage();">Bytt</button>' : '') +
+                (a.id !== APP.activeAddr ? '<button class="btn-secondary" style="font-size:12px;padding:5px 10px;" onclick="switchAddress(\'' + a.id + '\');renderPage();">' + t('addrSwitch') + '</button>' : '') +
                 '<button class="addr-del-btn" onclick="confirmDeleteAddr(\'' + a.id + '\',\'' + a.name.replace(/'/g,"\\'") + '\')" title="Slett"><i class="ti ti-trash"></i></button>' +
               '</div>' +
             '</div>';
@@ -3575,7 +3575,7 @@ function renderInnstillinger() {
       }
     </div>
     <button class="btn-secondary" style="width:100%;justify-content:center;margin-bottom:16px;" onclick="openAddrModal()">
-      <i class="ti ti-plus"></i> Legg til adresse
+      <i class="ti ti-plus"></i> ${t('addrAdd')}
     </button>
 
     <!-- BOLIGVERDI -->
@@ -3589,26 +3589,26 @@ function renderInnstillinger() {
       var gevCls = gevinst === null ? '' : gevinst >= 0 ? ' pos' : ' neg';
       var gevPfx = gevinst !== null && gevinst > 0 ? '+' : '';
       return `
-      <div class="settings-section-label"><i class="ti ti-trending-up" style="margin-right:5px;"></i>Boligverdi</div>
+      <div class="settings-section-label"><i class="ti ti-trending-up" style="margin-right:5px;"></i>${t('sPropertyValue')}</div>
       <div class="settings-card">
         <div style="padding:14px 16px 4px;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
             <div class="addr-field" style="margin:0;">
-              <label class="addr-label" for="bv-kjop">Kjøpspris</label>
+              <label class="addr-label" for="bv-kjop">${t('bvBuyPrice')}</label>
               <input class="addr-modal-input" id="bv-kjop" type="text" inputmode="numeric"
                 placeholder="F.eks. 4 500 000"
                 value="${v.kjopspris != null ? v.kjopspris.toLocaleString('nb-NO') : ''}"
                 onchange="saveBoligverdi('kjopspris',this.value)" />
             </div>
             <div class="addr-field" style="margin:0;">
-              <label class="addr-label" for="bv-dato">Kjøpsdato</label>
+              <label class="addr-label" for="bv-dato">${t('bvBuyDate')}</label>
               <input class="addr-modal-input" id="bv-dato" type="date"
                 value="${v.kjopsdato || ''}"
                 onchange="saveBoligverdi('kjopsdato',this.value)" />
             </div>
           </div>
           <div class="addr-field" style="margin-bottom:14px;">
-            <label class="addr-label" for="bv-verdi">Estimert nåverdi</label>
+            <label class="addr-label" for="bv-verdi">${t('bvEstValue')}</label>
             <input class="addr-modal-input" id="bv-verdi" type="text" inputmode="numeric"
               placeholder="F.eks. 5 200 000"
               value="${v.estimertVerdi != null ? v.estimertVerdi.toLocaleString('nb-NO') : ''}"
@@ -3616,19 +3616,19 @@ function renderInnstillinger() {
           </div>
           <div class="verdi-strip">
             <div class="verdi-card">
-              <div class="verdi-card-lbl">Kjøpt for</div>
+              <div class="verdi-card-lbl">${t('bvBoughtFor')}</div>
               <div class="verdi-card-val">${fmtNOK(v.kjopspris)}</div>
             </div>
             <div class="verdi-card">
-              <div class="verdi-card-lbl">Renoveringer (budsjett)</div>
+              <div class="verdi-card-lbl">${t('bvRenovations')}</div>
               <div class="verdi-card-val">${renov > 0 ? fmtNOK(renov) : '—'}</div>
             </div>
             <div class="verdi-card">
-              <div class="verdi-card-lbl">Total investering</div>
+              <div class="verdi-card-lbl">${t('bvTotalInv')}</div>
               <div class="verdi-card-val">${totalInv > 0 ? fmtNOK(totalInv) : '—'}</div>
             </div>
             <div class="verdi-card" style="border-color:${gevinst === null ? 'var(--paper3)' : gevinst >= 0 ? 'var(--green-border)' : '#F0B8B4'};">
-              <div class="verdi-card-lbl">Estimert gevinst</div>
+              <div class="verdi-card-lbl">${t('bvGain')}</div>
               <div class="verdi-card-val${gevCls}">${gevinst !== null ? gevPfx + fmtNOK(gevinst) : '—'}</div>
             </div>
           </div>
@@ -3659,7 +3659,7 @@ function renderInnstillinger() {
               },
             ];
             return '<div style="margin-top:4px;margin-bottom:4px;">' +
-              '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:8px;">Lokale fagpersoner</div>' +
+              '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:8px;">' + t('bvLocalPros') + '</div>' +
               links.map(function(l) {
                 return '<a href="' + l.href + '" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--paper3);text-decoration:none;">' +
                   '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:' + l.color + '18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
@@ -3701,16 +3701,16 @@ function renderInnstillinger() {
                 '</tr>';
               }).join('');
             return '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--paper3);">' +
-              '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px;">Kostnadshistorikk</div>' +
+              '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px;">' + t('bvCostHistory') + '</div>' +
               '<table class="kost-table">' +
-                '<thead><tr><th>Prosjekt</th><th>Status</th><th>Frist</th><th style="text-align:right;">Estimat</th></tr></thead>' +
+                '<thead><tr><th>' + t('bvProject') + '</th><th>' + t('bvStatus') + '</th><th>' + t('bvDeadline') + '</th><th style="text-align:right;">' + t('bvEstimate') + '</th></tr></thead>' +
                 '<tbody>' + rows + '</tbody>' +
                 '<tfoot><tr>' +
-                  '<td colspan="3" style="font-weight:700;padding-top:10px;border-top:2px solid var(--paper4);">Totalt</td>' +
+                  '<td colspan="3" style="font-weight:700;padding-top:10px;border-top:2px solid var(--paper4);">' + t('bvTotal') + '</td>' +
                   '<td style="font-weight:700;border-top:2px solid var(--paper4);text-align:right;">' + fmtNOK(totalDone+totalPlanned) + '</td>' +
                 '</tr>' +
-                (totalDone>0?'<tr><td colspan="3" style="color:var(--green);font-size:11.5px;">↳ Fullført</td><td style="color:var(--green);font-size:11.5px;text-align:right;">' + fmtNOK(totalDone) + '</td></tr>':'') +
-                (totalPlanned>0?'<tr><td colspan="3" style="color:var(--orange);font-size:11.5px;">↳ Kommende</td><td style="color:var(--orange);font-size:11.5px;text-align:right;">' + fmtNOK(totalPlanned) + '</td></tr>':'') +
+                (totalDone>0?'<tr><td colspan="3" style="color:var(--green);font-size:11.5px;">' + t('bvDoneTotal') + '</td><td style="color:var(--green);font-size:11.5px;text-align:right;">' + fmtNOK(totalDone) + '</td></tr>':'') +
+                (totalPlanned>0?'<tr><td colspan="3" style="color:var(--orange);font-size:11.5px;">' + t('bvUpcoming') + '</td><td style="color:var(--orange);font-size:11.5px;text-align:right;">' + fmtNOK(totalPlanned) + '</td></tr>':'') +
                 '</tfoot>' +
               '</table>' +
             '</div>';
@@ -3736,21 +3736,21 @@ function renderInnstillinger() {
         : 'https://www.arealplaner.no';
       var kommuneKartUrl = getKommuneMapUrl(knr, knavn) || ('https://www.kommunekart.com/?kommunenr=' + (knr || ''));
       return `
-      <div class="settings-section-label"><i class="ti ti-map-pin" style="margin-right:5px;"></i>Eiendomsinfo 🇳🇴</div>
+      <div class="settings-section-label"><i class="ti ti-map-pin" style="margin-right:5px;"></i>${t('sPropertyInfo')}</div>
       <div class="settings-card">
         <div style="padding:14px 16px;">
           ${m ? `
           <div class="setting-row">
             <div class="setting-row-left">
-              <div class="setting-row-label">Gårds- og bruksnummer</div>
-              <div class="setting-row-sub">Gnr/Bnr${m.fnr ? '/Fnr' : ''} fra matrikkelen</div>
+              <div class="setting-row-label">${t('eiGnrBnr')}</div>
+              <div class="setting-row-sub">${t('eiGnrBnrSub')}</div>
             </div>
             <span style="font-size:15px;font-weight:700;color:var(--ink);font-family:var(--serif);">${gnrBnr}</span>
           </div>
           <div class="setting-row" style="border-bottom:none;">
             <div class="setting-row-left">
-              <div class="setting-row-label">Kommune</div>
-              <div class="setting-row-sub">${knr ? 'Kommunenr: ' + knr : ''}</div>
+              <div class="setting-row-label">${t('eiMunicipality')}</div>
+              <div class="setting-row-sub">${knr ? t('eiMunicipalityNr') + ' ' + knr : ''}</div>
             </div>
             <span style="font-size:13px;font-weight:600;color:var(--ink2);">${knavn || '—'}</span>
           </div>
@@ -3765,7 +3765,7 @@ function renderInnstillinger() {
                 <i class="ti ti-map-2" style="font-size:16px;color:var(--blue);"></i>
               </div>
               <div style="flex:1;">
-                <div style="font-size:13px;font-weight:500;color:var(--ink);">Reguleringsplaner for ${knavn || 'kommunen'}</div>
+                <div style="font-size:13px;font-weight:500;color:var(--ink);">${t('eiRegPlans') + ' ' + (knavn || 'kommunen')}</div>
                 <div style="font-size:11px;color:var(--ink3);">arealplaner.no</div>
               </div>
               <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
@@ -3775,8 +3775,8 @@ function renderInnstillinger() {
                 <i class="ti ti-building-estate" style="font-size:16px;color:var(--green);"></i>
               </div>
               <div style="flex:1;">
-                <div style="font-size:13px;font-weight:500;color:var(--ink);">Se Eiendom – Kartverket</div>
-                <div style="font-size:11px;color:var(--ink3);">Eiendomshistorikk og matrikkelinfo</div>
+                <div style="font-size:13px;font-weight:500;color:var(--ink);">${t('eiSeeEiendom')}</div>
+                <div style="font-size:11px;color:var(--ink3);">${t('eiSeeEiendomSub')}</div>
               </div>
               <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
             </a>
@@ -3786,33 +3786,33 @@ function renderInnstillinger() {
               </div>
               <div style="flex:1;">
                 <div style="font-size:13px;font-weight:500;color:var(--ink);">${knavn ? knavn + ' kommune – kart' : 'Kommunens karttjeneste'}</div>
-                <div style="font-size:11px;color:var(--ink3);">Reguleringsplaner, eiendomsgrenser og kommunale data</div>
+                <div style="font-size:11px;color:var(--ink3);">${t('eiKommuneKartSub')}</div>
               </div>
               <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
             </a>` : ''}
           </div>
           ${m ? '' : `<button class="btn-secondary" style="width:100%;justify-content:center;margin-top:4px;" onclick="openAddrModal('${APP.activeAddr || ''}')">
-            <i class="ti ti-pencil"></i> Oppdater adresse
+            <i class="ti ti-pencil"></i> ${t('eiUpdateAddr')}
           </button>`}
         </div>
       </div>`;
     })()}
 
-    <div class="settings-section-label"><i class="ti ti-folder" style="margin-right:5px;"></i>Boligdokumenter</div>
+    <div class="settings-section-label"><i class="ti ti-folder" style="margin-right:5px;"></i>${t('sPropertyDocs')}</div>
     <div class="settings-card">
       <div style="padding:14px 16px;">
-        <p style="font-size:12px;color:var(--ink3);margin-bottom:10px;">Kjøpekontrakt, tilstandsrapport, forsikringsbevis, garantier og andre viktige dokumenter.</p>
+        <p style="font-size:12px;color:var(--ink3);margin-bottom:10px;">${t('bdSub')}</p>
         <div id="addr-docs-${APP.activeAddr}"></div>
         <input type="file" id="addr-doc-inp" accept="image/*,application/pdf,.pdf" multiple style="display:none"
           onchange="handleDocUpload(this,'${APP.activeAddr}','addr-docs-${APP.activeAddr}');renderInnstillinger()">
         <button class="doc-add-btn" onclick="document.getElementById('addr-doc-inp').click()">
-          <i class="ti ti-plus"></i> Legg til dokument
+          <i class="ti ti-plus"></i> ${t('bdAddBtn')}
         </button>
       </div>
     </div>` : ''}
 
     <!-- PROFIL -->
-    <div class="settings-section-label">Profil</div>
+    <div class="settings-section-label">${t('sProfile')}</div>
     <div class="settings-card">
       <div style="padding:16px;">
         ${APP.profile ?
@@ -3822,17 +3822,17 @@ function renderInnstillinger() {
             '<i class="ti ti-user-circle" style="font-size:28px;color:var(--ink3);"></i>' +
           '</div>' +
           '<div class="setting-row">' +
-            '<div class="setting-row-left"><div class="setting-row-label">Oppgaver tilpasset deg</div><div class="setting-row-sub">Basert på svarene dine</div></div>' +
+            '<div class="setting-row-left"><div class="setting-row-label">' + t('profileTaskCount') + '</div><div class="setting-row-sub">' + t('profileTaskSub') + '</div></div>' +
             '<span style="font-size:13px;font-weight:600;color:var(--ink3);">' + APP.tasks.length + ' stk</span>' +
           '</div>'
           :
           '<div class="setting-row" style="border-bottom:none;">' +
-            '<div class="setting-row-left"><div class="setting-row-label">Ingen profil opprettet</div><div class="setting-row-sub">Ta registreringen for en personlig plan</div></div>' +
+            '<div class="setting-row-left"><div class="setting-row-label">' + t('profileNone') + '</div><div class="setting-row-sub">' + t('profileNoneSub') + '</div></div>' +
           '</div>'
         }
         <div class="setting-row" style="border-bottom:none;padding-bottom:0;">
-          <div class="setting-row-left"><div class="setting-row-label">${APP.profile ? 'Oppdater profil' : 'Start registrering'}</div><div class="setting-row-sub">Endre boligtype, funksjoner og preferanser</div></div>
-          <button class="btn-secondary" style="font-size:12px;" onclick="startSurveyFromSettings()"><i class="ti ti-pencil"></i> ${APP.profile ? 'Endre' : 'Start'}</button>
+          <div class="setting-row-left"><div class="setting-row-label">${APP.profile ? t('profileEditLbl') : t('profileStartLbl')}</div><div class="setting-row-sub">${t('profileEditSub')}</div></div>
+          <button class="btn-secondary" style="font-size:12px;" onclick="startSurveyFromSettings()"><i class="ti ti-pencil"></i> ${APP.profile ? t('profileEditBtn') : t('profileStartBtn')}</button>
         </div>
       </div>
     </div>
@@ -3924,7 +3924,7 @@ function renderInnstillinger() {
       </div>
     </div>
 
-    <div class="settings-section-label"><i class="ti ti-bell" style="margin-right:5px;"></i>Push-varsler</div>
+    <div class="settings-section-label"><i class="ti ti-bell" style="margin-right:5px;"></i>${t('sPush')}</div>
     <div class="settings-card">
       <div style="padding:14px 16px;">
         ${(function() {
@@ -3933,32 +3933,32 @@ function renderInnstillinger() {
             return '<div style="display:flex;align-items:center;gap:10px;">' +
               '<i class="ti ti-bell-check" style="font-size:22px;color:var(--green);flex-shrink:0;"></i>' +
               '<div style="flex:1;">' +
-                '<div style="font-size:13.5px;font-weight:500;color:var(--ink);">Varsler er aktivert</div>' +
-                '<div style="font-size:12px;color:var(--ink3);margin-top:2px;">Du mottar push-varsler fra appen.</div>' +
+                '<div style="font-size:13.5px;font-weight:500;color:var(--ink);">' + t('pushEnabled') + '</div>' +
+                '<div style="font-size:12px;color:var(--ink3);margin-top:2px;">' + t('pushEnabledSub') + '</div>' +
               '</div>' +
-              '<button class="btn-secondary" style="font-size:12px;" onclick="disablePushNotif()">Slå av</button>' +
+              '<button class="btn-secondary" style="font-size:12px;" onclick="disablePushNotif()">' + t('pushDisable') + '</button>' +
             '</div>';
           }
           if (perm === 'denied') {
             return '<div style="display:flex;align-items:flex-start;gap:10px;">' +
               '<i class="ti ti-bell-off" style="font-size:20px;color:var(--red);margin-top:2px;flex-shrink:0;"></i>' +
-              '<div><div style="font-size:13px;font-weight:500;color:var(--ink);">Varsler er blokkert</div>' +
-              '<div style="font-size:12px;color:var(--ink3);margin-top:3px;line-height:1.5;">Gå til nettleserinnstillinger → Nettsteder og tillat varsler fra denne siden.</div></div>' +
+              '<div><div style="font-size:13px;font-weight:500;color:var(--ink);">' + t('pushBlocked') + '</div>' +
+              '<div style="font-size:12px;color:var(--ink3);margin-top:3px;line-height:1.5;">' + t('pushBlockedSub') + '</div></div>' +
             '</div>';
           }
           return '<div style="display:flex;align-items:center;gap:10px;">' +
             '<i class="ti ti-bell" style="font-size:22px;color:var(--ink3);flex-shrink:0;"></i>' +
             '<div style="flex:1;">' +
-              '<div style="font-size:13.5px;font-weight:500;color:var(--ink);">Push-varsler ikke aktivert</div>' +
-              '<div style="font-size:12px;color:var(--ink3);margin-top:2px;">Motta varsler om forfalte oppgaver — også når appen er lukket.</div>' +
+              '<div style="font-size:13.5px;font-weight:500;color:var(--ink);">' + t('pushOff') + '</div>' +
+              '<div style="font-size:12px;color:var(--ink3);margin-top:2px;">' + t('pushOffSub') + '</div>' +
             '</div>' +
-            '<button class="btn-primary" style="font-size:12px;" onclick="enablePushNotif()"><i class="ti ti-bell"></i> Slå på</button>' +
+            '<button class="btn-primary" style="font-size:12px;" onclick="enablePushNotif()"><i class="ti ti-bell"></i> ' + t('pushEnable') + '</button>' +
           '</div>';
         })()}
       </div>
     </div>
 
-    <div class="settings-section-label">Valgfrie oppgaveområder</div>
+    <div class="settings-section-label">${t('sOptional')}</div>
     <div class="settings-card">
       <div style="padding:0 16px;">
         ${EKSTRA_OPTIONS.map(function(opt) {
@@ -3972,7 +3972,7 @@ function renderInnstillinger() {
             '<button class="toggle-btn ' + (on ? 'on' : 'off') + '" onclick="toggleEkstraFeature(\'' + opt.val + '\')"></button>' +
           '</div>';
         }).join('')}
-        ${!APP.profile ? '<p style="font-size:12px;color:var(--ink3);padding-bottom:12px;">Kjør oppsett under Profil for å aktivere valgfrie oppgaver.</p>' : ''}
+        ${!APP.profile ? '<p style="font-size:12px;color:var(--ink3);padding-bottom:12px;">' + t('optionalSetupTip') + '</p>' : ''}
       </div>
     </div>
 
@@ -4026,23 +4026,23 @@ function renderInnstillinger() {
       </div>
     </div>
 
-    <div class="settings-section-label">Om appen</div>
+    <div class="settings-section-label">${t('sAbout')}</div>
     <div class="settings-card">
       <div style="padding:16px;">
         <div class="setting-row">
-          <div class="setting-row-left"><div class="setting-row-label">Versjon</div><div class="setting-row-sub">Boligvedlikehold</div></div>
+          <div class="setting-row-left"><div class="setting-row-label">${t('aboutVersion')}</div><div class="setting-row-sub">Boligvedlikehold</div></div>
           <span style="font-size:13px;font-weight:600;color:var(--ink3);">v0.3.3</span>
         </div>
         <div class="setting-row">
-          <div class="setting-row-left"><div class="setting-row-label">Oppgaver lastet</div><div class="setting-row-sub">For ${APP.boligtype}</div></div>
+          <div class="setting-row-left"><div class="setting-row-label">${t('aboutTasksFor')}</div><div class="setting-row-sub">For ${APP.boligtype}</div></div>
           <span style="font-size:13px;font-weight:600;color:var(--ink3);">${APP.tasks.length} stk</span>
         </div>
         <div class="setting-row">
-          <div class="setting-row-left"><div class="setting-row-label">Fullførte oppgaver</div><div class="setting-row-sub">Marker alle som aktive igjen</div></div>
-          <button class="btn-secondary" style="font-size:12px;" onclick="resetAll()"><i class="ti ti-refresh"></i>Nullstill</button>
+          <div class="setting-row-left"><div class="setting-row-label">${t('aboutCompleted')}</div><div class="setting-row-sub">${t('aboutResetSub')}</div></div>
+          <button class="btn-secondary" style="font-size:12px;" onclick="resetAll()"><i class="ti ti-refresh"></i>${t('aboutReset')}</button>
         </div>
         <div class="setting-row" style="border-bottom:none;padding-bottom:0;">
-          <div class="setting-row-left"><div class="setting-row-label">Laget av</div><div class="setting-row-sub">Kim-André Hedemark Sjøgren · Utviklet med Claude</div></div>
+          <div class="setting-row-left"><div class="setting-row-label">${t('aboutCreatedBy')}</div><div class="setting-row-sub">Kim-André Hedemark Sjøgren · Utviklet med Claude</div></div>
           <span style="font-size:18px;">🏠</span>
         </div>
       </div>
@@ -4754,6 +4754,77 @@ const STRINGS = {
     codeCopied:'Kode kopiert:',
     codeIs:'Kode:',
     shareFillFields:'Fyll inn nøkkel og navn.',
+    /* Settings sections */
+    sSettingsSub:'Tilpass appen til din bolig',
+    sSharing:'Bolig-deling', sAddresses:'Adresser', sProfile:'Profil',
+    sPropertyValue:'Boligverdi', sPropertyInfo:'Eiendomsinfo 🇳🇴',
+    sPropertyDocs:'Boligdokumenter', sOptional:'Valgfrie oppgaveområder',
+    sCalendar:'Kalender', sAppearance:'Utseende', sPush:'Push-varsler', sAbout:'Om appen',
+    /* Address section */
+    addrNone:'Ingen adresser lagt til ennå.', addrAdd:'Legg til adresse',
+    addrActive:'Aktiv', addrSwitch:'Bytt', addrDel:'Slett',
+    /* Housing types */
+    htLeilighet:'Leilighet', htRekkehus:'Rekkehus', htEnebolig:'Enebolig',
+    htSommerhytte:'Sommerhytte', htVinterhytte:'Vinterhytte',
+    htLeilSub:'Borettslag/sameie', htRekSub:'Delt vegg, hage',
+    htEneSub:'Frittstående', htSomSub:'Sesongbruk', htVinSub:'Helårsbruk',
+    /* Profile section */
+    profileTaskCount:'Oppgaver tilpasset deg', profileTaskSub:'Basert på svarene dine',
+    profileNone:'Ingen profil opprettet', profileNoneSub:'Ta registreringen for en personlig plan',
+    profileEditLbl:'Oppdater profil', profileStartLbl:'Start registrering',
+    profileEditSub:'Endre boligtype, funksjoner og preferanser',
+    profileEditBtn:'Endre', profileStartBtn:'Start',
+    /* Calendar */
+    calTitle:'Kalendereksport', calSub:'Eksporter oppgaver til Google, Apple eller Outlook',
+    calAll:'Alle aktive oppgaver', calOverdue:'Bare forfalte',
+    calSoon:'Forfaller innen 2 uker', calProf:'Trenger fagfolk',
+    /* Appearance */
+    appThemeDark:'Mørkt tema', appThemeLight:'Lyst tema',
+    appThemeToDark:'Bytt til mørkt tema', appThemeToLight:'Bytt til lyst tema',
+    /* Push notifications */
+    pushEnabled:'Varsler er aktivert', pushEnabledSub:'Du mottar push-varsler fra appen.',
+    pushDisable:'Slå av', pushBlocked:'Varsler er blokkert',
+    pushBlockedSub:'Gå til nettleserinnstillinger → Nettsteder og tillat varsler fra denne siden.',
+    pushOff:'Push-varsler ikke aktivert',
+    pushOffSub:'Motta varsler om forfalte oppgaver — også når appen er lukket.', pushEnable:'Slå på',
+    /* About */
+    aboutVersion:'Versjon', aboutTasksFor:'Oppgaver lastet, for',
+    aboutCompleted:'Fullførte oppgaver', aboutResetSub:'Marker alle som aktive igjen',
+    aboutReset:'Nullstill', aboutCreatedBy:'Laget av', aboutSaved:'Lagret',
+    /* Boligverdi */
+    bvBuyPrice:'Kjøpspris', bvBuyDate:'Kjøpsdato', bvEstValue:'Estimert nåverdi',
+    bvBoughtFor:'Kjøpt for', bvRenovations:'Renoveringer (budsjett)',
+    bvTotalInv:'Total investering', bvGain:'Estimert gevinst',
+    bvLocalPros:'Lokale fagpersoner', bvFindBroker:'Finn lokal eiendomsmegler',
+    bvFindAppraiser:'Finn lokal takstmann', bvComparePrices:'Sammenlign boligpriser',
+    bvGoogleSearch:'Google-søk',
+    bvCostHistory:'Kostnadshistorikk', bvProject:'Prosjekt',
+    bvStatus:'Status', bvDeadline:'Frist', bvEstimate:'Estimat',
+    bvTotal:'Totalt', bvDoneTotal:'↳ Fullført', bvUpcoming:'↳ Kommende',
+    /* Eiendomsinfo */
+    eiGnrBnr:'Gårds- og bruksnummer', eiGnrBnrSub:'Gnr/Bnr fra matrikkelen',
+    eiMunicipality:'Kommune', eiMunicipalityNr:'Kommunenr:',
+    eiNoInfo:'Legg inn gateadresse og postnummer for å hente gårds- og bruksnummer automatisk fra Kartverket.',
+    eiRegPlans:'Reguleringsplaner for', eiSeeEiendom:'Se Eiendom – Kartverket',
+    eiSeeEiendomSub:'Eiendomshistorikk og matrikkelinfo',
+    eiKommuneKartSub:'Reguleringsplaner, eiendomsgrenser og kommunale data',
+    eiUpdateAddr:'Oppdater adresse',
+    /* Boligdokumenter */
+    bdSub:'Kjøpekontrakt, tilstandsrapport, forsikringsbevis, garantier og andre viktige dokumenter.',
+    bdAddBtn:'Legg til dokument',
+    /* Boligscore */
+    bsTitle:'Boligscore', bsGood:'Godt vedlikeholdt',
+    bsOk:'Bør følges opp', bsBad:'Krever handling',
+    /* Sort */
+    sortLabel:'Sorter:',
+    /* Sharing/members */
+    membersSectionTitle:'Familiemedlemmer & datadeling',
+    membersNone:'Ingen familiemedlemmer lagt til',
+    membersSync:'Eksporter/importer for å synkronisere',
+    membersAdminister:'Administrer', membersSetup:'Sett opp',
+    optionalSetupTip:'Kjør oppsett under Profil for å aktivere valgfrie oppgaver.',
+    /* Projects */
+    projDocuments:'Dokumenter', projDocAdd:'Kvittering, garanti eller PDF',
   },
   sv: {
     appName:'Bostadsunderhåll', appDesc:'Håll koll på allt underhåll i ditt hem',
@@ -4850,6 +4921,57 @@ const STRINGS = {
     codeCopied:'Kod kopierad:',
     codeIs:'Kod:',
     shareFillFields:'Fyll i nyckel och namn.',
+    sSettingsSub:'Anpassa appen till ditt hem', sSharing:'Bolig-deling', sAddresses:'Adresser',
+    sProfile:'Profil', sPropertyValue:'Bostadsvärde', sPropertyInfo:'Fastighetsinformation 🇸🇪',
+    sPropertyDocs:'Boligdokumenter', sOptional:'Valfria uppgiftsområden',
+    sCalendar:'Kalender', sAppearance:'Utseende', sPush:'Push-notiser', sAbout:'Om appen',
+    addrNone:'Inga adresser tillagda ännu.', addrAdd:'Lägg till adress',
+    addrActive:'Aktiv', addrSwitch:'Byt', addrDel:'Ta bort',
+    htLeilighet:'Lägenhet', htRekkehus:'Radhus', htEnebolig:'Villa',
+    htSommerhytte:'Sommarstugan', htVinterhytte:'Vinterstuga',
+    htLeilSub:'Bostadsrättsförening', htRekSub:'Delad vägg, trädgård',
+    htEneSub:'Friliggande', htSomSub:'Säsongsbruk', htVinSub:'Helårsbruk',
+    profileTaskCount:'Uppgifter anpassade för dig', profileTaskSub:'Baserat på dina svar',
+    profileNone:'Ingen profil skapad', profileNoneSub:'Gör registreringen för en personlig plan',
+    profileEditLbl:'Uppdatera profil', profileStartLbl:'Starta registrering',
+    profileEditSub:'Ändra bostadstyp, funktioner och inställningar',
+    profileEditBtn:'Ändra', profileStartBtn:'Starta',
+    calTitle:'Kalenderexport', calSub:'Exportera uppgifter till Google, Apple eller Outlook',
+    calAll:'Alla aktiva uppgifter', calOverdue:'Bara försenade',
+    calSoon:'Förfaller inom 2 veckor', calProf:'Kräver fackfolk',
+    appThemeDark:'Mörkt tema', appThemeLight:'Ljust tema',
+    appThemeToDark:'Byt till mörkt tema', appThemeToLight:'Byt till ljust tema',
+    pushEnabled:'Aviseringar aktiverade', pushEnabledSub:'Du tar emot push-aviseringar.',
+    pushDisable:'Stäng av', pushBlocked:'Aviseringar blockerade',
+    pushBlockedSub:'Gå till webbläsarinställningar och tillåt aviseringar.',
+    pushOff:'Push-aviseringar ej aktiverade', pushOffSub:'Få aviseringar om försenade uppgifter.', pushEnable:'Slå på',
+    aboutVersion:'Version', aboutTasksFor:'Uppgifter laddade, för',
+    aboutCompleted:'Slutförda uppgifter', aboutResetSub:'Markera alla som aktiva igen',
+    aboutReset:'Nollställ', aboutCreatedBy:'Skapad av', aboutSaved:'Sparat',
+    bvBuyPrice:'Köpspris', bvBuyDate:'Köpdatum', bvEstValue:'Uppskattat nuvärde',
+    bvBoughtFor:'Köpt för', bvRenovations:'Renoveringar (budget)',
+    bvTotalInv:'Total investering', bvGain:'Uppskattad vinst',
+    bvLocalPros:'Lokala proffs', bvFindBroker:'Hitta lokal fastighetsmäklare',
+    bvFindAppraiser:'Hitta lokal värderingsman', bvComparePrices:'Jämför bostadspriser',
+    bvGoogleSearch:'Google-sökning',
+    bvCostHistory:'Kostnadshistorik', bvProject:'Projekt',
+    bvStatus:'Status', bvDeadline:'Deadline', bvEstimate:'Estimat',
+    bvTotal:'Totalt', bvDoneTotal:'↳ Slutfört', bvUpcoming:'↳ Kommande',
+    eiGnrBnr:'Fastighetsidentitet', eiGnrBnrSub:'Från fastighetsregistret',
+    eiMunicipality:'Kommun', eiMunicipalityNr:'Kommunnr:',
+    eiNoInfo:'Ange gatuadress och postnummer för att hämta fastighetsinformation.',
+    eiRegPlans:'Detaljplaner för', eiSeeEiendom:'Se fastighet – Lantmäteriet',
+    eiSeeEiendomSub:'Fastighetshistorik och registerinformation',
+    eiKommuneKartSub:'Detaljplaner, fastighetsgränser och kommunala data',
+    eiUpdateAddr:'Uppdatera adress',
+    bdSub:'Köpekontrakt, besiktningsprotokoll, försäkringsbevis, garantier och andra viktiga dokument.',
+    bdAddBtn:'Lägg till dokument',
+    bsTitle:'Bostadspoäng', bsGood:'Välunderhållet', bsOk:'Bör följas upp', bsBad:'Kräver åtgärd',
+    sortLabel:'Sortera:', membersSectionTitle:'Familjemedlemmar & datadelning',
+    membersNone:'Inga familjemedlemmar tillagda', membersSync:'Exportera/importera för att synkronisera',
+    membersAdminister:'Administrera', membersSetup:'Konfigurera',
+    optionalSetupTip:'Kör inställningar under Profil för att aktivera valfria uppgifter.',
+    projDocuments:'Dokument', projDocAdd:'Kvitto, garanti eller PDF',
   },
   da: {
     appName:'Boligvedligehold', appDesc:'Hold overblik over al vedligeholdelse i dit hjem',
@@ -5042,6 +5164,57 @@ const STRINGS = {
     codeCopied:'Code copied:',
     codeIs:'Code:',
     shareFillFields:'Please fill in key and name.',
+    sSettingsSub:'Customise the app for your home', sSharing:'Home sharing', sAddresses:'Addresses',
+    sProfile:'Profile', sPropertyValue:'Property value', sPropertyInfo:'Property info',
+    sPropertyDocs:'Property documents', sOptional:'Optional task areas',
+    sCalendar:'Calendar', sAppearance:'Appearance', sPush:'Push notifications', sAbout:'About the app',
+    addrNone:'No addresses added yet.', addrAdd:'Add address',
+    addrActive:'Active', addrSwitch:'Switch', addrDel:'Delete',
+    htLeilighet:'Apartment', htRekkehus:'Terraced house', htEnebolig:'Detached house',
+    htSommerhytte:'Summer cabin', htVinterhytte:'Winter cabin',
+    htLeilSub:'Housing association', htRekSub:'Shared wall, garden',
+    htEneSub:'Freestanding', htSomSub:'Seasonal use', htVinSub:'Year-round use',
+    profileTaskCount:'Tasks tailored for you', profileTaskSub:'Based on your answers',
+    profileNone:'No profile created', profileNoneSub:'Complete registration for a personal plan',
+    profileEditLbl:'Update profile', profileStartLbl:'Start registration',
+    profileEditSub:'Change property type, features and preferences',
+    profileEditBtn:'Edit', profileStartBtn:'Start',
+    calTitle:'Calendar export', calSub:'Export tasks to Google, Apple or Outlook',
+    calAll:'All active tasks', calOverdue:'Overdue only',
+    calSoon:'Due within 2 weeks', calProf:'Requires professional',
+    appThemeDark:'Dark theme', appThemeLight:'Light theme',
+    appThemeToDark:'Switch to dark theme', appThemeToLight:'Switch to light theme',
+    pushEnabled:'Notifications enabled', pushEnabledSub:'You are receiving push notifications.',
+    pushDisable:'Turn off', pushBlocked:'Notifications blocked',
+    pushBlockedSub:'Go to browser settings → Sites and allow notifications from this site.',
+    pushOff:'Push notifications not enabled', pushOffSub:'Receive alerts about overdue tasks — even when the app is closed.', pushEnable:'Turn on',
+    aboutVersion:'Version', aboutTasksFor:'Tasks loaded, for',
+    aboutCompleted:'Completed tasks', aboutResetSub:'Mark all as active again',
+    aboutReset:'Reset', aboutCreatedBy:'Created by', aboutSaved:'Saved',
+    bvBuyPrice:'Purchase price', bvBuyDate:'Purchase date', bvEstValue:'Estimated current value',
+    bvBoughtFor:'Purchased for', bvRenovations:'Renovations (budget)',
+    bvTotalInv:'Total investment', bvGain:'Estimated gain',
+    bvLocalPros:'Local professionals', bvFindBroker:'Find local estate agent',
+    bvFindAppraiser:'Find local surveyor', bvComparePrices:'Compare property prices',
+    bvGoogleSearch:'Google search',
+    bvCostHistory:'Cost history', bvProject:'Project',
+    bvStatus:'Status', bvDeadline:'Deadline', bvEstimate:'Estimate',
+    bvTotal:'Total', bvDoneTotal:'↳ Completed', bvUpcoming:'↳ Upcoming',
+    eiGnrBnr:'Plot reference number', eiGnrBnrSub:'From the land registry',
+    eiMunicipality:'Municipality', eiMunicipalityNr:'Municipality no.:',
+    eiNoInfo:'Enter street address and postal code to automatically fetch property information.',
+    eiRegPlans:'Planning documents for', eiSeeEiendom:'View Property – Land Registry',
+    eiSeeEiendomSub:'Property history and registry information',
+    eiKommuneKartSub:'Planning documents, property boundaries and municipal data',
+    eiUpdateAddr:'Update address',
+    bdSub:'Purchase contract, condition report, insurance, warranties and other important documents.',
+    bdAddBtn:'Add document',
+    bsTitle:'Home score', bsGood:'Well maintained', bsOk:'Should be followed up', bsBad:'Requires action',
+    sortLabel:'Sort:', membersSectionTitle:'Family members & data sharing',
+    membersNone:'No family members added', membersSync:'Export/import to synchronise',
+    membersAdminister:'Manage', membersSetup:'Set up',
+    optionalSetupTip:'Run setup under Profile to activate optional tasks.',
+    projDocuments:'Documents', projDocAdd:'Receipt, warranty or PDF',
   },
   de: {
     appName:'Hauswartung', appDesc:'Behalten Sie alle Wartungsarbeiten in Ihrem Zuhause im Blick',
@@ -5138,6 +5311,57 @@ const STRINGS = {
     codeCopied:'Code kopiert:',
     codeIs:'Code:',
     shareFillFields:'Bitte Schlüssel und Name eingeben.',
+    sSettingsSub:'App an Ihr Zuhause anpassen', sSharing:'Wohnen teilen', sAddresses:'Adressen',
+    sProfile:'Profil', sPropertyValue:'Immobilienwert', sPropertyInfo:'Immobilieninfo',
+    sPropertyDocs:'Immobiliendokumente', sOptional:'Optionale Aufgabenbereiche',
+    sCalendar:'Kalender', sAppearance:'Darstellung', sPush:'Push-Benachrichtigungen', sAbout:'Über die App',
+    addrNone:'Noch keine Adressen hinzugefügt.', addrAdd:'Adresse hinzufügen',
+    addrActive:'Aktiv', addrSwitch:'Wechseln', addrDel:'Löschen',
+    htLeilighet:'Wohnung', htRekkehus:'Reihenhaus', htEnebolig:'Einfamilienhaus',
+    htSommerhytte:'Sommerhaus', htVinterhytte:'Winterhaus',
+    htLeilSub:'Wohnungseigentümergemeinschaft', htRekSub:'Gemeinschaftswand, Garten',
+    htEneSub:'Freistehend', htSomSub:'Saisonnutzung', htVinSub:'Ganzjährig',
+    profileTaskCount:'Aufgaben für Sie angepasst', profileTaskSub:'Basierend auf Ihren Angaben',
+    profileNone:'Kein Profil erstellt', profileNoneSub:'Registrierung für einen persönlichen Plan',
+    profileEditLbl:'Profil aktualisieren', profileStartLbl:'Registrierung starten',
+    profileEditSub:'Gebäudetyp, Funktionen und Präferenzen ändern',
+    profileEditBtn:'Bearbeiten', profileStartBtn:'Starten',
+    calTitle:'Kalenderexport', calSub:'Aufgaben nach Google, Apple oder Outlook exportieren',
+    calAll:'Alle aktiven Aufgaben', calOverdue:'Nur überfällige',
+    calSoon:'Fällig in 2 Wochen', calProf:'Fachmann erforderlich',
+    appThemeDark:'Dunkles Design', appThemeLight:'Helles Design',
+    appThemeToDark:'Zu dunklem Design wechseln', appThemeToLight:'Zu hellem Design wechseln',
+    pushEnabled:'Benachrichtigungen aktiviert', pushEnabledSub:'Sie erhalten Push-Benachrichtigungen.',
+    pushDisable:'Deaktivieren', pushBlocked:'Benachrichtigungen blockiert',
+    pushBlockedSub:'Gehen Sie zu den Browsereinstellungen und erlauben Sie Benachrichtigungen.',
+    pushOff:'Push-Benachrichtigungen nicht aktiviert', pushOffSub:'Benachrichtigungen über fällige Aufgaben erhalten.', pushEnable:'Aktivieren',
+    aboutVersion:'Version', aboutTasksFor:'Aufgaben geladen, für',
+    aboutCompleted:'Erledigte Aufgaben', aboutResetSub:'Alle als aktiv markieren',
+    aboutReset:'Zurücksetzen', aboutCreatedBy:'Erstellt von', aboutSaved:'Gespeichert',
+    bvBuyPrice:'Kaufpreis', bvBuyDate:'Kaufdatum', bvEstValue:'Geschätzter Wert',
+    bvBoughtFor:'Gekauft für', bvRenovations:'Renovierungen (Budget)',
+    bvTotalInv:'Gesamtinvestition', bvGain:'Geschätzter Gewinn',
+    bvLocalPros:'Lokale Fachleute', bvFindBroker:'Lokalen Makler finden',
+    bvFindAppraiser:'Lokalen Gutachter finden', bvComparePrices:'Immobilienpreise vergleichen',
+    bvGoogleSearch:'Google-Suche',
+    bvCostHistory:'Kostenhistorie', bvProject:'Projekt',
+    bvStatus:'Status', bvDeadline:'Frist', bvEstimate:'Schätzung',
+    bvTotal:'Gesamt', bvDoneTotal:'↳ Abgeschlossen', bvUpcoming:'↳ Bevorstehend',
+    eiGnrBnr:'Grundstücksnummer', eiGnrBnrSub:'Aus dem Grundbuch',
+    eiMunicipality:'Gemeinde', eiMunicipalityNr:'Gemeindenr.:',
+    eiNoInfo:'Geben Sie Straße und Postleitzahl ein, um Grundstücksinformationen abzurufen.',
+    eiRegPlans:'Bebauungspläne für', eiSeeEiendom:'Grundstück anzeigen – Grundbuch',
+    eiSeeEiendomSub:'Grundstückshistorie und Registerinformationen',
+    eiKommuneKartSub:'Bebauungspläne, Grundstücksgrenzen und kommunale Daten',
+    eiUpdateAddr:'Adresse aktualisieren',
+    bdSub:'Kaufvertrag, Gutachten, Versicherungsnachweis, Garantien und andere wichtige Dokumente.',
+    bdAddBtn:'Dokument hinzufügen',
+    bsTitle:'Haus-Score', bsGood:'Gut gepflegt', bsOk:'Sollte überprüft werden', bsBad:'Maßnahmen erforderlich',
+    sortLabel:'Sortieren:', membersSectionTitle:'Familienmitglieder & Datenaustausch',
+    membersNone:'Keine Familienmitglieder hinzugefügt', membersSync:'Exportieren/importieren zum Synchronisieren',
+    membersAdminister:'Verwalten', membersSetup:'Einrichten',
+    optionalSetupTip:'Profil-Setup ausführen, um optionale Aufgaben zu aktivieren.',
+    projDocuments:'Dokumente', projDocAdd:'Beleg, Garantie oder PDF',
   },
   nl: {
     appName:'Woningonderhoud', appDesc:'Houd alle onderhoudswerkzaamheden in uw woning bij',
@@ -5234,6 +5458,57 @@ const STRINGS = {
     codeCopied:'Code gekopieerd:',
     codeIs:'Code:',
     shareFillFields:'Vul sleutel en naam in.',
+    sSettingsSub:'Pas de app aan uw woning aan', sSharing:'Wonen delen', sAddresses:'Adressen',
+    sProfile:'Profiel', sPropertyValue:'Woningwaarde', sPropertyInfo:'Woninginfo',
+    sPropertyDocs:'Woningdocumenten', sOptional:'Optionele taakgebieden',
+    sCalendar:'Kalender', sAppearance:'Weergave', sPush:'Push-meldingen', sAbout:'Over de app',
+    addrNone:'Nog geen adressen toegevoegd.', addrAdd:'Adres toevoegen',
+    addrActive:'Actief', addrSwitch:'Wisselen', addrDel:'Verwijderen',
+    htLeilighet:'Appartement', htRekkehus:'Rijtjeshuis', htEnebolig:'Vrijstaande woning',
+    htSommerhytte:'Zomerhuis', htVinterhytte:'Winterhuis',
+    htLeilSub:'Vereniging van eigenaars', htRekSub:'Gedeelde muur, tuin',
+    htEneSub:'Vrijstaand', htSomSub:'Seizoensgebruik', htVinSub:'Jaarrond gebruik',
+    profileTaskCount:'Taken voor u aangepast', profileTaskSub:'Op basis van uw antwoorden',
+    profileNone:'Geen profiel aangemaakt', profileNoneSub:'Voltooi registratie voor een persoonlijk plan',
+    profileEditLbl:'Profiel bijwerken', profileStartLbl:'Registratie starten',
+    profileEditSub:'Woningtype, functies en voorkeuren wijzigen',
+    profileEditBtn:'Bewerken', profileStartBtn:'Starten',
+    calTitle:'Kalenderexport', calSub:'Taken exporteren naar Google, Apple of Outlook',
+    calAll:'Alle actieve taken', calOverdue:'Alleen achterstallig',
+    calSoon:'Vervalt binnen 2 weken', calProf:'Vakman vereist',
+    appThemeDark:'Donker thema', appThemeLight:'Licht thema',
+    appThemeToDark:'Overschakelen naar donker thema', appThemeToLight:'Overschakelen naar licht thema',
+    pushEnabled:'Meldingen ingeschakeld', pushEnabledSub:'U ontvangt push-meldingen.',
+    pushDisable:'Uitschakelen', pushBlocked:'Meldingen geblokkeerd',
+    pushBlockedSub:'Ga naar browserinstellingen en sta meldingen toe.',
+    pushOff:'Push-meldingen niet ingeschakeld', pushOffSub:'Ontvang meldingen over achterstallige taken.', pushEnable:'Inschakelen',
+    aboutVersion:'Versie', aboutTasksFor:'Taken geladen, voor',
+    aboutCompleted:'Voltooide taken', aboutResetSub:'Alle als actief markeren',
+    aboutReset:'Resetten', aboutCreatedBy:'Gemaakt door', aboutSaved:'Opgeslagen',
+    bvBuyPrice:'Aankoopprijs', bvBuyDate:'Aankoopdatum', bvEstValue:'Geschatte huidige waarde',
+    bvBoughtFor:'Gekocht voor', bvRenovations:'Renovaties (budget)',
+    bvTotalInv:'Totale investering', bvGain:'Geschatte winst',
+    bvLocalPros:'Lokale vaklieden', bvFindBroker:'Lokale makelaar zoeken',
+    bvFindAppraiser:'Lokale taxateur zoeken', bvComparePrices:'Woningprijzen vergelijken',
+    bvGoogleSearch:'Google zoeken',
+    bvCostHistory:'Kostenhistorie', bvProject:'Project',
+    bvStatus:'Status', bvDeadline:'Deadline', bvEstimate:'Schatting',
+    bvTotal:'Totaal', bvDoneTotal:'↳ Voltooid', bvUpcoming:'↳ Aankomend',
+    eiGnrBnr:'Perceelnummer', eiGnrBnrSub:'Uit het kadaster',
+    eiMunicipality:'Gemeente', eiMunicipalityNr:'Gemeentenr.:',
+    eiNoInfo:'Voer straat en postcode in om perceelsinformatie automatisch op te halen.',
+    eiRegPlans:'Bestemmingsplannen voor', eiSeeEiendom:'Perceel bekijken – Kadaster',
+    eiSeeEiendomSub:'Perceelhistorie en registerinformatie',
+    eiKommuneKartSub:'Bestemmingsplannen, perceelsgrenzen en gemeentelijke gegevens',
+    eiUpdateAddr:'Adres bijwerken',
+    bdSub:'Koopakte, bouwkundig rapport, verzekeringsbewijs, garanties en andere belangrijke documenten.',
+    bdAddBtn:'Document toevoegen',
+    bsTitle:'Woningscore', bsGood:'Goed onderhouden', bsOk:'Moet worden bijgehouden', bsBad:'Vereist actie',
+    sortLabel:'Sorteren:', membersSectionTitle:'Familieleden & gegevens delen',
+    membersNone:'Geen familieleden toegevoegd', membersSync:'Exporteren/importeren om te synchroniseren',
+    membersAdminister:'Beheren', membersSetup:'Instellen',
+    optionalSetupTip:'Voer profiel-setup uit om optionele taken te activeren.',
+    projDocuments:'Documenten', projDocAdd:'Bon, garantie of PDF',
   },
 };
 STRINGS.fi = STRINGS.en; // Finnish UI falls back to English
@@ -7860,11 +8135,11 @@ function renderProjectCard(proj) {
           '<input type="file" id="img-inp-' + proj.id + '" accept="image/*" multiple style="display:none" onchange="handleImgUpload(this,\'' + proj.id + '\')">' +
           '<div class="proj-img-grid" id="proj-imgs-' + proj.id + '"></div>' +
 
-          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px;"><i class="ti ti-paperclip" style="font-size:12px;vertical-align:-1px;margin-right:4px;"></i>Dokumenter</div>' +
+          '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px;"><i class="ti ti-paperclip" style="font-size:12px;vertical-align:-1px;margin-right:4px;"></i>' + t('projDocuments') + '</div>' +
           '<div id="proj-docs-' + proj.id + '"></div>' +
           '<input type="file" id="doc-inp-' + proj.id + '" accept="image/*,application/pdf,.pdf" multiple style="display:none" onchange="handleDocUpload(this,\'' + proj.id + '\',\'proj-docs-' + proj.id + '\')">' +
           '<button class="doc-add-btn" style="margin-bottom:14px;" onclick="document.getElementById(\'doc-inp-' + proj.id + '\').click()">' +
-            '<i class="ti ti-plus"></i> Kvittering, garanti eller PDF' +
+            '<i class="ti ti-plus"></i> ' + t('projDocAdd') +
           '</button>' +
 
           '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px;">' + t('projStatusLabel') + '</div>' +
