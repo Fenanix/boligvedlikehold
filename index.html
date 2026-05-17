@@ -1940,6 +1940,34 @@ input, select { font-family: var(--sans); }
   cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 
+/* ── Boligscore ── */
+.boligscore-card {
+  background: var(--warm-white); border: 1px solid var(--paper3);
+  border-radius: var(--r-lg); padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 14px; box-shadow: var(--shadow-sm);
+}
+.score-ring {
+  width: 58px; height: 58px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 21px; font-weight: 600; border: 3px solid;
+}
+.score-ring.green  { background: var(--green-soft);  color: var(--green);  border-color: var(--green); }
+.score-ring.orange { background: var(--orange-soft); color: var(--orange); border-color: var(--orange); }
+.score-ring.red    { background: var(--red-soft);    color: var(--red);    border-color: var(--red); }
+.score-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.score-sub   { font-size: 11.5px; color: var(--ink3); margin-top: 2px; line-height: 1.4; }
+
+/* Kostnadstabell */
+.kost-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.kost-table th { font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--ink3); padding: 0 8px 8px 0; text-align: left; }
+.kost-table td { padding: 7px 8px 7px 0; border-top: 1px solid var(--paper3);
+  color: var(--ink); vertical-align: top; }
+.kost-table td:last-child { text-align: right; font-weight: 600; white-space: nowrap; }
+.kost-status-chip { font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 20px; display: inline-block; }
+
 /* ── Boligverdi ── */
 .verdi-strip {
   display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px;
@@ -3338,6 +3366,20 @@ function renderHjem() {
         '<div class="stat-card"><div class="stat-num orange">' + soon + '</div><div class="stat-lbl">' + t('within2w') + '</div></div>' +
         '<div class="stat-card"><div class="stat-num green">' + done + '</div><div class="stat-lbl">' + t('done') + '</div></div>' +
       '</div>' +
+      (function() {
+        var bs = computeBoligscore();
+        if (!bs) return '';
+        return '<div class="boligscore-card">' +
+          '<div class="score-ring ' + bs.cls + '">' + bs.score + '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div class="score-label">' + bs.label + '</div>' +
+            '<div class="score-sub">' + bs.tip + '</div>' +
+          '</div>' +
+          '<div style="text-align:right;flex-shrink:0;">' +
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink4);">Boligscore</div>' +
+          '</div>' +
+        '</div>';
+      })() +
       (infoText ? '<div class="info-banner"><i class="ti ti-info-circle"></i><span>' + infoText + '</span></div>' : '') +
       '<div class="filter-bar">' + filterBtns + '</div>' +
       (function() {
@@ -3630,6 +3672,47 @@ function renderInnstillinger() {
                   '<i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);flex-shrink:0;"></i>' +
                 '</a>';
               }).join('') +
+            '</div>';
+          })()}
+
+          <!-- Kostnadshistorikk -->
+          ${(function() {
+            var projects = [];
+            try { projects = JSON.parse(localStorage.getItem('bv_projects_v1_' + APP.activeAddr) || '[]'); } catch {}
+            var withBudget = projects.filter(function(p) { return p.budget && parseNOK(p.budget); });
+            if (!withBudget.length) return '';
+            var STATUS_LABEL = { planned:'Planlagt', active:'Pågår', paused:'Pause', done:'Fullført' };
+            var STATUS_STYLE = {
+              planned: 'background:var(--blue-soft);color:var(--blue)',
+              active:  'background:var(--orange-soft);color:var(--orange)',
+              paused:  'background:var(--paper3);color:var(--ink3)',
+              done:    'background:var(--green-soft);color:var(--green)',
+            };
+            var totalDone    = withBudget.filter(function(p){return p.status==='done';}).reduce(function(s,p){return s+(parseNOK(p.budget)||0);},0);
+            var totalPlanned = withBudget.filter(function(p){return p.status!=='done';}).reduce(function(s,p){return s+(parseNOK(p.budget)||0);},0);
+            var rows = withBudget
+              .sort(function(a,b){ return (a.status==='done'?1:0)-(b.status==='done'?1:0); })
+              .map(function(p) {
+                return '<tr>' +
+                  '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + p.name + '</td>' +
+                  '<td><span class="kost-status-chip" style="' + (STATUS_STYLE[p.status]||STATUS_STYLE.planned) + '">' + (STATUS_LABEL[p.status]||'') + '</span></td>' +
+                  (p.deadline ? '<td style="color:var(--ink3);font-size:11.5px;">' + p.deadline.slice(0,7) + '</td>' : '<td style="color:var(--ink4);">—</td>') +
+                  '<td>' + fmtNOK(parseNOK(p.budget)) + '</td>' +
+                '</tr>';
+              }).join('');
+            return '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--paper3);">' +
+              '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px;">Kostnadshistorikk</div>' +
+              '<table class="kost-table">' +
+                '<thead><tr><th>Prosjekt</th><th>Status</th><th>Frist</th><th style="text-align:right;">Estimat</th></tr></thead>' +
+                '<tbody>' + rows + '</tbody>' +
+                '<tfoot><tr>' +
+                  '<td colspan="3" style="font-weight:700;padding-top:10px;border-top:2px solid var(--paper4);">Totalt</td>' +
+                  '<td style="font-weight:700;border-top:2px solid var(--paper4);text-align:right;">' + fmtNOK(totalDone+totalPlanned) + '</td>' +
+                '</tr>' +
+                (totalDone>0?'<tr><td colspan="3" style="color:var(--green);font-size:11.5px;">↳ Fullført</td><td style="color:var(--green);font-size:11.5px;text-align:right;">' + fmtNOK(totalDone) + '</td></tr>':'') +
+                (totalPlanned>0?'<tr><td colspan="3" style="color:var(--orange);font-size:11.5px;">↳ Kommende</td><td style="color:var(--orange);font-size:11.5px;text-align:right;">' + fmtNOK(totalPlanned) + '</td></tr>':'') +
+                '</tfoot>' +
+              '</table>' +
             '</div>';
           })()}
         </div>
@@ -4071,6 +4154,32 @@ function getRenovasjonskostnader() {
     if (!isNaN(n)) total += n;
   });
   return total;
+}
+
+/* ── Boligscore ── */
+function computeBoligscore() {
+  var tasks = APP.tasks || [];
+  if (!tasks.length) return null;
+  var overdue  = tasks.filter(function(t) { return !t.done && t.due < TODAY; });
+  var safOvr   = overdue.filter(function(t) { return t.cat === 'sikkerhet'; });
+  var soon     = tasks.filter(function(t) { return !t.done && t.due >= TODAY && Math.floor((t.due-TODAY)/864e5) <= 14; });
+  var score    = 100;
+  score -= safOvr.length * 15;                         // sikkerhet forfalt: -15 hver
+  score -= (overdue.length - safOvr.length) * 7;       // andre forfalt: -7 hver
+  score -= Math.min(soon.length * 2, 20);              // snart: max -20
+  score  = Math.max(0, Math.min(100, Math.round(score)));
+  var cls, label, tip;
+  if (score >= 80) { cls='green';  label='Godt vedlikeholdt'; tip=overdue.length===0?'Ingen forfalte oppgaver.':safOvr.length+' sikkerhetsoppgave'+(safOvr.length!==1?'r':'')+' krever oppmerksomhet.'; }
+  else if(score>=50){ cls='orange'; label='Bør følges opp';   tip=overdue.length+' forfalt'+', '+soon.length+' snart forfalt.'; }
+  else              { cls='red';    label='Krever handling';   tip=safOvr.length+' sikkerhetsoppgave'+(safOvr.length!==1?'r':'')+' er forfalt.'; }
+  return { score: score, cls: cls, label: label, tip: tip, overdue: overdue.length, soon: soon.length };
+}
+
+/* Parse "150 000 kr" → number */
+function parseNOK(str) {
+  if (!str) return null;
+  var n = parseInt((str + '').replace(/[^\d]/g, ''), 10);
+  return isNaN(n) ? null : n;
 }
 
 function fmtNOK(n) {
