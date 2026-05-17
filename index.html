@@ -3638,6 +3638,83 @@ function renderInnstillinger() {
 
     <!-- BOLIGDOKUMENTER -->
     ${APP.activeAddr ? `
+    <!-- EIENDOMSINFO (Norge only) -->
+    ${(function() {
+      var country = (APP.locale && APP.locale.country) || 'NO';
+      if (country !== 'NO') return '';
+      var addr = APP.addresses.find(function(a) { return a.id === APP.activeAddr; });
+      if (!addr) return '';
+      var m = addr.matrikkel;
+      var knr = m && m.kommunenr;
+      var knavn = m && m.kommunenavn;
+      var gnrBnr = m ? m.gnr + '/' + m.bnr + (m.fnr ? '/' + m.fnr : '') : null;
+      var arealUrl = knr
+        ? 'https://www.arealplaner.no/' + knr + (knavn ? knavn.replace(/\s+/g,'') : '') + '/#'
+        : 'https://www.arealplaner.no';
+      var kartUrl = 'https://www.kommunekart.com/?kommunenr=' + (knr || '');
+      return `
+      <div class="settings-section-label"><i class="ti ti-map-pin" style="margin-right:5px;"></i>Eiendomsinfo 🇳🇴</div>
+      <div class="settings-card">
+        <div style="padding:14px 16px;">
+          ${m ? `
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <div class="setting-row-label">Gårds- og bruksnummer</div>
+              <div class="setting-row-sub">Gnr/Bnr${m.fnr ? '/Fnr' : ''} fra matrikkelen</div>
+            </div>
+            <span style="font-size:15px;font-weight:700;color:var(--ink);font-family:var(--serif);">${gnrBnr}</span>
+          </div>
+          <div class="setting-row" style="border-bottom:none;">
+            <div class="setting-row-left">
+              <div class="setting-row-label">Kommune</div>
+              <div class="setting-row-sub">${knr ? 'Kommunenr: ' + knr : ''}</div>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:var(--ink2);">${knavn || '—'}</span>
+          </div>
+          ` : `
+          <p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px;line-height:1.6;">
+            Legg inn gateadresse og postnummer på adressen for å hente gårds- og bruksnummer automatisk fra Kartverket.
+          </p>
+          `}
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:${m ? '12' : '0'}px;">
+            ${m ? `<a href="${arealUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--paper3);text-decoration:none;">
+              <div style="width:32px;height:32px;border-radius:var(--r-sm);background:var(--blue-soft);display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-map-2" style="font-size:16px;color:var(--blue);"></i>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:500;color:var(--ink);">Reguleringsplaner for ${knavn || 'kommunen'}</div>
+                <div style="font-size:11px;color:var(--ink3);">arealplaner.no</div>
+              </div>
+              <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
+            </a>` : ''}
+            <a href="https://seeiendom.kartverket.no/${m ? '?gardsnummer=' + m.gnr + '&bruksnummer=' + m.bnr + '&kommunenummer=' + (knr||'') : ''}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--paper3);text-decoration:none;">
+              <div style="width:32px;height:32px;border-radius:var(--r-sm);background:var(--green-soft);display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-building-estate" style="font-size:16px;color:var(--green);"></i>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:500;color:var(--ink);">Se Eiendom – Kartverket</div>
+                <div style="font-size:11px;color:var(--ink3);">Eiendomshistorikk og matrikkelinfo</div>
+              </div>
+              <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
+            </a>
+            ${m && knr ? `<a href="${kartUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:9px 0;text-decoration:none;">
+              <div style="width:32px;height:32px;border-radius:var(--r-sm);background:var(--orange-soft);display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-map" style="font-size:16px;color:var(--orange);"></i>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:500;color:var(--ink);">Kommunekart – plangrenser</div>
+                <div style="font-size:11px;color:var(--ink3);">kommunekart.com</div>
+              </div>
+              <i class="ti ti-external-link" style="font-size:13px;color:var(--ink4);"></i>
+            </a>` : ''}
+          </div>
+          ${m ? '' : `<button class="btn-secondary" style="width:100%;justify-content:center;margin-top:4px;" onclick="openAddrModal('${APP.activeAddr || ''}')">
+            <i class="ti ti-pencil"></i> Oppdater adresse
+          </button>`}
+        </div>
+      </div>`;
+    })()}
+
     <div class="settings-section-label"><i class="ti ti-folder" style="margin-right:5px;"></i>Boligdokumenter</div>
     <div class="settings-card">
       <div style="padding:14px 16px;">
@@ -6146,6 +6223,12 @@ function saveAddrModal() {
           APP.boligtype = _addrModalType;
           switchAddress(_addrEditId);
         }
+        /* Hent eiendomsinfo fra Kartverket (Norge only) */
+        if ((APP.locale && APP.locale.country) === 'NO' && street && postalCode) {
+          fetchEiendomsinfo(street, postalCode).then(function(info) {
+            if (info) { addr.matrikkel = info; saveAddresses(APP.addresses); if (APP.page === 'innstillinger') renderInnstillinger(); }
+          });
+        }
       }
     } else {
       var newAddr = addAddress(name, _addrModalType, null);
@@ -6155,6 +6238,12 @@ function saveAddrModal() {
       if (lat) { newAddr.lat = lat; newAddr.lon = lon; newAddr.cityName = cityName; }
       saveAddresses(APP.addresses);
       switchAddress(newAddr.id);
+      /* Hent eiendomsinfo fra Kartverket (Norge only) */
+      if ((APP.locale && APP.locale.country) === 'NO' && street && postalCode) {
+        fetchEiendomsinfo(street, postalCode).then(function(info) {
+          if (info) { newAddr.matrikkel = info; saveAddresses(APP.addresses); if (APP.page === 'innstillinger') renderInnstillinger(); }
+        });
+      }
     }
     closeAddrModal();
     renderPage();
@@ -6868,6 +6957,34 @@ async function loadWeatherForCurrentAddr() {
 
 // Geocode city name using Nominatim (free, no key needed)
 /* ── Norwegian postal code → poststed + kommune (Bring API) ── */
+/* ════════════════════════════════════════
+   EIENDOMSINFO  (Kartverket, Norge only)
+════════════════════════════════════════ */
+async function fetchEiendomsinfo(street, postalCode) {
+  /* Kartverket Adresse-API — gratis og CORS-åpent */
+  if (!street || !postalCode) return null;
+  try {
+    var q = encodeURIComponent(street.trim());
+    var url = 'https://ws.geonorge.no/adresser/v1/sok?sok=' + q +
+              '&postnummer=' + encodeURIComponent(postalCode.trim()) +
+              '&treffPerSide=1&utkoordsys=4258';
+    var r = await fetch(url);
+    if (!r.ok) return null;
+    var data = await r.json();
+    var a = data.adresser && data.adresser[0];
+    if (!a) return null;
+    return {
+      gnr:          a.gardsnummer,
+      bnr:          a.bruksnummer,
+      fnr:          a.festenummer   || 0,
+      snr:          a.seksjonsnummer || 0,
+      kommunenr:    a.kommunenummer,
+      kommunenavn:  a.kommunenavn,
+      adresseId:    a.adresseId,
+    };
+  } catch { return null; }
+}
+
 async function lookupPostalCode(pnr) {
   try {
     var r = await fetch(
